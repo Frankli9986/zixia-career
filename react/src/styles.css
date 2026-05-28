@@ -13,17 +13,18 @@
 }
 
 :root {
-  /* Light theme (Onboarding) */
-  --bg: #FAFBFC;
-  --bg-card: #F5F6F8;
-  --text: #2C2C2C;
-  --text-secondary: #6B6B6B;
-  --text-tertiary: #A0A0A0;
-  --accent: #5B8A6E;
-  --accent-light: #E8F0EB;
-  --accent-dark: #3D6B52;
-  --border: #E5E7EB;
-  --shadow: rgba(0,0,0,0.06);
+  /* Dark theme (统一 - 模拟器视觉为标准) */
+  --bg: #0f0e17;
+  --bg-card: #1a1825;
+  --text: #f0e6d3;
+  --text-secondary: #a89f91;
+  --text-tertiary: #6b6560;
+  --primary: #8b7bb5;
+  --accent: #8b7bb5;
+  --accent-light: #2a2838;
+  --accent-dark: #3d3459;
+  --border: #2a2838;
+  --shadow: rgba(0,0,0,0.3);
   --radius: 12px;
   --radius-sm: 8px;
   --font: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
