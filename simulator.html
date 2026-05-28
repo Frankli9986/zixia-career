@@ -1063,6 +1063,18 @@ const PARAMS = [
   {id:'w',name:'WLB委员',lo:'工作狂',hi:'生活优先',desc:'"你累了。你需要休息。"'}
 ];
 
+// onboarding key -> simulator id 映射
+const KEY_MAP = {
+  'overwork': 'o',
+  'care': 'c',
+  'leadership': 'l',
+  'competition': 'p',
+  'process': 'f',
+  'growth': 'g',
+  'innovation': 'i',
+  'worklife': 'w'
+};
+
 const COMPANIES = [
   {name:'华为',desc:'狼性文化图腾，用最苦的活换最快的成长',tags:['高薪','技术顶流','奋斗者协议'],o:9,c:5,l:2,p:9,f:7,g:9,i:4,w:1,industry:['B端']},
   {name:'腾讯',desc:'产品帝国，好福利养着最聪明的人做最难的事',tags:['福利好','产品文化','赛马机制'],o:7,c:7,l:5,p:7,f:6,g:8,i:6,w:3,industry:['C端']},
@@ -1559,6 +1571,24 @@ const ROUTE_EVENTS = {
       {text:'一群愿意再和你合作的人',route:'social',flavor:'你想留下的是关系。'},
       {text:'一个更清晰的自己',route:'balanced',flavor:'你想留下的是答案。'}
     ]
+  },
+  after_week_9: {
+    scene: '三个月到了。你开始问自己：我是不是该换个地方了？',
+    text: '你已经在这家公司待了三个月。\n\n有人拿到了晋升，有人选择离开，有人开始带新人。\n\n你也开始想：我在这里，还有多少可能？\n\n窗外是傍晚的天空。你站在十字路口。',
+    choices: [
+      {text:'留下来，争取更多资源和支持',route:'balanced',flavor:'你觉得还有机会。'},
+      {text:'主动出击，争取晋升或转岗机会',route:'tech',flavor:'你不想再等了。'},
+      {text:'开始投简历，收集外部机会',route:'social',flavor:'你想知道自己在市场上值多少。'}
+    ]
+  },
+  after_week_12: {
+    scene: '三个月试用期结束。HR找你谈话："你的表现不错，但我们需要再谈谈。"',
+    text: '留下，还是离开？这是一个问题。\n\n但也许更重要的是：你通过这三个月，更了解自己了。\n\n你开始想：我到底是哪种人？我适合什么样的环境？',
+    choices: [
+      {text:'留下来，接受这个环境',route:'balanced',flavor:'你决定在这里继续寻找可能性。'},
+      {text:'离开，去更适合自己的地方',route:'tech',flavor:'你知道这不是终点，是起点。'},
+      {text:'谈判，争取更好的条件再留下',route:'social',flavor:'你想试试，能不能改变这个环境。'}
+    ]
   }
 };
 
@@ -1829,7 +1859,7 @@ function randomPick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
 // NEXT WEEK
 // ============================================================
 function nextWeek() {
-  if (state.week > 9) {
+  if (state.week > 13) {
     endGame();
     return;
   }
@@ -1837,6 +1867,8 @@ function nextWeek() {
   // 路线选择节点
   if (state.week === 4) { showRouteChoice('after_week_3'); return; }
   if (state.week === 7) { showRouteChoice('after_week_6'); return; }
+  if (state.week === 10) { showRouteChoice('after_week_9'); return; }
+  if (state.week === 13) { showRouteChoice('after_week_12'); return; }
 
   // 普通事件
   const available = EVENT_POOL.filter(e =>
@@ -1947,15 +1979,12 @@ function showEvent(event) {
 
   const version = event.versions[versionKey];
 
-  // 构建HTML
+  // 构建HTML（先显示场景，不显示选项）
   const checkLabels = {crit:'大成功',success:'成功',fail:'未通过'};
   const checkClass = versionKey;
   const diffNote = phaseMult !== 1.0
     ? ` (${phaseLabel}难度×${phaseMult.toFixed(1)})`
     : '';
-
-  // 精力门控：标记高消耗选项
-  const energyWarning = state.energy < 35;
 
   const container = document.getElementById('event-container');
   container.innerHTML = `
@@ -1971,26 +2000,99 @@ function showEvent(event) {
         <div class="scene-setting">${version.scene}</div>
         <p>${version.text.replace(/\n/g,'</p><p>')}</p>
       </div>
-      <div class="choices" id="choices-area">
-        ${version.choices.map((c,i) => {
-          const hasHighCost = c.eff && c.eff.energy && c.eff.energy <= -20;
-          const warnClass = (energyWarning && hasHighCost) ? ' style="border-color:var(--danger);"' : '';
-          const warnLabel = (energyWarning && hasHighCost)
-            ? '<div class="choice-flavor" style="color:var(--danger);">⚠️ 你的身心值很低，这个选择会消耗大量精力</div>'
-            : (c.meta && c.meta.includes('balanced') ? '<div class="choice-flavor" style="color:var(--success);">低消耗选择</div>' : '');
-          return `
-          <button class="choice-btn"${warnClass} onclick="makeChoice(${state.week},'${event.id}',${i},'${versionKey}')">
-            ${c.text}
-            ${warnLabel}
-          </button>
-        `}).join('')}
-      </div>
+      <div class="choices" id="choices-area"></div>
     </div>
   `;
 
   // 保存当前事件数据用于选择回调
   state._currentEvent = event;
   state._currentVersion = version;
+
+  // 显示委员会辩论动画，然后显示选项
+  setTimeout(() => showCouncilDebate(event, version), 50);
+}
+
+function showCouncilDebate(event, version) {
+  // 清理旧的定时器
+  if (state._councilDebateTimer) {
+    clearTimeout(state._councilDebateTimer);
+  }
+
+  // 随机选 2-3 个相关委员
+  const mainParam = event.checkParam;
+  const relatedParams = PARAMS.map(p => p.id).filter(id => id !== mainParam);
+  const otherParams = shuffleArray(relatedParams).slice(0, 2);
+  const speakers = shuffleArray([mainParam, ...otherParams]).slice(0, 3);
+
+  const voices = speakers.map(pid => {
+    const p = PARAMS.find(x => x.id === pid);
+    const personality = COUNCIL_PERSONALITY[pid];
+    const lines = [...(personality.agree || []), ...(personality.disagree || [])];
+    const text = lines[Math.floor(Math.random() * lines.length)];
+    return { speaker: p.name, text };
+  });
+
+  // 创建遮罩
+  const overlay = document.createElement('div');
+  overlay.id = 'council-debate';
+  overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:pointer;';
+  overlay.innerHTML = `
+    <div style="color:#fff;font-size:14px;margin-bottom:8px;">内心委员会</div>
+    ${voices.map(v => `
+      <div style="color:rgba(255,255,255,0.9);font-size:15px;margin:6px 0;">
+        <span style="color:#5B8A6E;font-weight:bold;">${v.speaker}：</span>${v.text}
+      </div>
+    `).join('')}
+    <div style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:16px;">点击跳过</div>
+  `;
+
+  const eventArea = document.querySelector('.event-area');
+  if (eventArea) {
+    eventArea.style.position = 'relative';
+    eventArea.appendChild(overlay);
+  }
+
+  overlay.addEventListener('click', () => skipCouncilDebate(version));
+
+  // 300ms 后自动显示选项
+  state._councilDebateTimer = setTimeout(() => skipCouncilDebate(version), 300);
+}
+
+function skipCouncilDebate(version) {
+  if (state._councilDebateTimer) {
+    clearTimeout(state._councilDebateTimer);
+    state._councilDebateTimer = null;
+  }
+  const overlay = document.getElementById('council-debate');
+  if (overlay) overlay.remove();
+
+  // 渲染选项按钮
+  const choicesArea = document.getElementById('choices-area');
+  if (!choicesArea || !version) return;
+
+  const energyWarning = state.energy < 35;
+  choicesArea.innerHTML = version.choices.map((c, i) => {
+    const hasHighCost = c.eff && c.eff.energy && c.eff.energy <= -20;
+    const warnClass = (energyWarning && hasHighCost) ? ' style="border-color:var(--danger);"' : '';
+    const warnLabel = (energyWarning && hasHighCost)
+      ? '<div class="choice-flavor" style="color:var(--danger);">⚠️ 你的身心值很低，这个选择会消耗大量精力</div>'
+      : (c.meta && c.meta.includes('balanced') ? '<div class="choice-flavor" style="color:var(--success);">低消耗选择</div>' : '');
+    return `
+      <button class="choice-btn"${warnClass} onclick="makeChoice(${state.week},'${state._currentEvent.id}',${i},'${state._currentVersion ? '' : 'success'}')">
+        ${c.text}
+        ${warnLabel}
+      </button>
+    `;
+  }).join('');
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 // ============================================================
@@ -3236,6 +3338,30 @@ function showMemberDialogue(pid) {
 // ============================================================
 (function boot() {
   initSliders();
+  // 从 onboarding 恢复用户画像
+  const savedProfile = loadUserProfile();
+  if (savedProfile && savedProfile.values) {
+    const vals = savedProfile.values;
+    // 双向兼容：onboarding key ('overwork') 和 simulator id ('o')
+    PARAMS.forEach(p => {
+      let val = vals[p.id]; // 兜底：直接用 id
+      if (val === undefined && p.id in KEY_MAP) {
+        // 尝试用 KEY_MAP 反查 onboarding key
+        const reverseMap = {};
+        Object.entries(KEY_MAP).forEach(([k, v]) => { reverseMap[v] = k; });
+        const ok = reverseMap[p.id];
+        val = vals[ok];
+      }
+      if (val === undefined) val = 5;
+      state.params[p.id] = val;
+      state.initialParams[p.id] = val;
+      // 更新 slider DOM
+      const slider = document.getElementById('slider-' + p.id);
+      const valEl = document.getElementById('val-' + p.id);
+      if (slider) slider.value = val;
+      if (valEl) valEl.textContent = val;
+    });
+  }
   const history = loadRunHistory();
   if (history && history.length > 0) {
     showSpace();
