@@ -525,11 +525,13 @@ async function realParsing(file) {
       throw new Error('文件内容读取失败或内容过少');
     }
     
-    // Step 2: 调用 API
+    // Step 2: 调用 API（标记开始分析）
     await new Promise(r => setTimeout(r, 1200));
-    markStepDone('step2');
     
     const result = await callDeepSeekAPI(resumeText);
+    
+    // Step 2 完成（API 返回了，分析完成）
+    markStepDone('step2');
     
     // 验证返回值
     const requiredKeys = ['overwork', 'care', 'leadership', 'competition', 'process', 'growth', 'innovation', 'worklife'];
