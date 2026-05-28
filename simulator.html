@@ -2576,9 +2576,9 @@ function initSpaceTabs() {
       const target = document.getElementById(this.dataset.tab);
       if (target) target.classList.add('active');
       // Lazy-load tab content
-      if (this.dataset.tab === 'tab-radar') buildCompanyRadar();
+      if (this.dataset.tab === 'tab-company') buildCompanyRadar();
       if (this.dataset.tab === 'tab-gene') buildGeneArchiveDummy();
-      if (this.dataset.tab === 'tab-grow') buildGrowthWorkshop();
+      if (this.dataset.tab === 'tab-workshop') buildGrowthWorkshop();
       if (this.dataset.tab === 'tab-lounge') buildCommitteeLounge();
     });
   });
