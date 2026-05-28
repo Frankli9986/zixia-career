@@ -2524,6 +2524,11 @@ function skipProfile() {
 }
 
 function showProfileOrSpace() {
+  const history = loadRunHistory();
+  if (history && history.length > 0) {
+    showSpace();
+    return;
+  }
   const profile = loadUserProfile();
   if (profile && (profile.mbti || profile.major || profile.gradYear || (profile.interests && profile.interests.length > 0))) {
     showSpace();
