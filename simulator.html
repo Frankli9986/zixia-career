@@ -1006,8 +1006,10 @@
     </div>
     <div class="space-tab-content" id="tab-company">
       <div class="space-card"><h4 class="space-card-title">基于你最新参数的匹配结果</h4><p class="space-card-desc">来自 14 家中国公司的 8 维画像，通过风格重合度计算匹配</p></div>
-      <div class="company-top3" id="company-top3"></div>
-      <div class="company-all-section"><button class="btn btn-text" id="btn-toggle-all-companies" onclick="toggleAllCompanies()">查看全部 14 家公司 ▼</button><div class="company-all-list" id="company-all-list" style="display:none;"></div></div>
+      <div id="company-radar-list">
+        <div class="company-top3" id="company-top3"></div>
+        <div class="company-all-section"><button class="btn btn-text" id="btn-toggle-all" onclick="toggleAllCompanies()">查看全部 14 家公司 ▼</button><div class="company-all-list" id="company-all-list" style="display:none;"></div></div>
+      </div>
       <div class="company-detail-overlay" id="company-detail-overlay" onclick="if(event.target===this)hideCompanyDetail()">
         <div class="company-detail-card" id="company-detail-card">
           <div class="cd-name" id="cd-name"></div>
