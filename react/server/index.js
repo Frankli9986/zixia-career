@@ -19,7 +19,10 @@ app.post('/api/parse-resume', async (req, res) => {
     return res.status(400).json({ error: '简历内容过短或缺失' });
   }
 
-  const API_KEY = process.env.DEEPSEEK_API_KEY || 'sk-34dP43LGhS3nyiKfKT4S1y7Jgb7e8vN2mRx4UwXp2Zq6Hc9LkFsTmYo8A9d';
+  const API_KEY = process.env.DEEPSEEK_API_KEY;
+  if (!API_KEY) {
+    return res.status(500).json({ error: 'DeepSeek API Key 未配置，请设置 DEEPSEEK_API_KEY 环境变量' });
+  }
 
   try {
     const response = await fetch('https://api.deepseek.com/chat/completions', {
