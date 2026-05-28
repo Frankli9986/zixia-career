@@ -1,0 +1,3248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的职场模拟器 · 你脑海里的8个声音</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --bg:#0f0e17;
+    --card:#1a1825;
+    --card2:#232130;
+    --text:#f0e6d3;
+    --text2:#a89f91;
+    --text3:#6b6560;
+    --accent:#e8b86d;
+    --accent2:#c9a96e;
+    --danger:#c75c5c;
+    --success:#6b9b7a;
+    --mind:#8b7bb5;
+    --border:#2a2838;
+    --radius:4px;
+    --font-body:'Noto Sans SC',sans-serif;
+    --font-serif:'Noto Serif SC',serif;
+  }
+
+  body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+    font-size:15px;
+  }
+
+  .screen{display:none;min-height:100vh;}
+  .screen.active{display:block;}
+
+  /* ====== INTRO ====== */
+  .intro{
+    max-width:640px;margin:0 auto;padding:48px 24px 80px;
+  }
+  .intro h1{
+    font-family:var(--font-serif);
+    font-size:clamp(28px,5vw,40px);
+    font-weight:700;
+    text-align:center;
+    margin-top:32px;
+    color:var(--accent);
+    letter-spacing:4px;
+  }
+  .intro .subtitle{
+    text-align:center;color:var(--text2);
+    font-size:14px;margin:8px 0 40px;
+    font-family:var(--font-serif);
+    font-style:italic;
+  }
+  .intro .prologue{
+    background:var(--card);
+    border-left:3px solid var(--accent);
+    padding:20px 24px;
+    margin-bottom:32px;
+    font-family:var(--font-serif);
+    font-size:14px;
+    line-height:2;
+    color:var(--text2);
+  }
+  .intro .prologue p{margin-bottom:12px;}
+  .intro .prologue p:last-child{margin-bottom:0;}
+
+  .slider-group{margin-bottom:32px;}
+  .slider-item{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:14px 18px;margin-bottom:10px;
+  }
+  .slider-item .shead{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:6px;
+  }
+  .slider-item .sname{
+    font-size:13px;font-weight:500;
+    display:flex;align-items:center;gap:6px;
+  }
+  .slider-item .sval{
+    font-size:12px;color:var(--accent);min-width:24px;text-align:right;
+  }
+  .slider-item input[type=range]{
+    width:100%;height:3px;background:var(--border);
+    -webkit-appearance:none;appearance:none;
+  }
+  .slider-item input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:14px;height:14px;
+    background:var(--accent);border-radius:50%;cursor:pointer;
+  }
+  .slabels{
+    display:flex;justify-content:space-between;
+    font-size:10px;color:var(--text3);margin-top:4px;
+  }
+
+  .btn{
+    display:block;width:100%;padding:14px;
+    background:var(--accent);color:var(--bg);
+    border:none;font-size:14px;font-weight:700;
+    cursor:pointer;transition:all .2s;
+    font-family:var(--font-body);
+  }
+  .btn:hover{background:var(--accent2);}
+  .btn-secondary{
+    background:transparent;color:var(--text2);
+    border:1px solid var(--border);
+    margin-top:8px;
+  }
+  .btn-secondary:hover{color:var(--text);border-color:var(--text2);}
+
+  /* ====== GAME SCREEN ====== */
+  .game{
+    max-width:640px;margin:0 auto;padding:24px 20px 80px;
+  }
+
+  /* 状态栏 */
+  .status-bar{
+    display:flex;gap:12px;justify-content:center;
+    margin-bottom:24px;flex-wrap:wrap;
+  }
+  .status-pill{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:6px 14px;font-size:11px;
+    color:var(--text2);
+  }
+  .status-pill b{color:var(--accent);}
+
+  /* 路线指示器 */
+  .route-indicator{
+    text-align:center;margin-bottom:20px;
+    font-size:11px;color:var(--text3);
+    letter-spacing:2px;
+  }
+  .route-indicator .current-route{
+    color:var(--accent);font-weight:500;
+  }
+
+  /* 事件区域 */
+  .event-area{
+    background:var(--card);
+    border:1px solid var(--border);
+    margin-bottom:20px;
+  }
+  .event-meta{
+    padding:12px 18px;
+    border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;
+    font-size:11px;color:var(--text3);
+    text-transform:uppercase;letter-spacing:1px;
+  }
+  .event-week{color:var(--accent);}
+
+  .event-scene{
+    padding:24px 20px;
+    font-family:var(--font-serif);
+    font-size:15px;
+    line-height:2.2;
+    color:var(--text);
+  }
+  .event-scene .scene-setting{
+    color:var(--text2);
+    font-size:13px;
+    margin-bottom:16px;
+    font-style:italic;
+  }
+  .event-scene p{margin-bottom:16px;}
+  .event-scene p:last-child{margin-bottom:0;}
+
+  /* 内心委员会区域 */
+  .mind-council{
+    background:var(--card2);
+    border-top:1px solid var(--border);
+    padding:20px;
+  }
+  .mind-council .council-header{
+    font-size:10px;color:var(--mind);
+    letter-spacing:3px;text-transform:uppercase;
+    margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .mind-council .council-header::before{
+    content:"";display:inline-block;width:20px;height:1px;background:var(--mind);
+  }
+  .voice-line{
+    margin-bottom:12px;
+    padding-left:16px;
+    border-left:2px solid var(--border);
+    font-size:13px;
+    line-height:1.9;
+    color:var(--text2);
+    animation:fadeIn .6s ease;
+  }
+  .voice-line .speaker{
+    color:var(--mind);font-weight:500;
+    font-size:11px;letter-spacing:1px;
+  }
+  .voice-line .speaker.danger{color:var(--danger);}
+  .voice-line .speaker.success{color:var(--success);}
+
+  /* 检定结果 */
+  .check-result{
+    text-align:center;padding:12px;
+    font-size:12px;letter-spacing:2px;
+    margin-bottom:16px;
+  }
+  .check-result.crit{color:var(--success);border:1px solid var(--success);}
+  .check-result.success{color:var(--accent);border:1px solid var(--accent);}
+  .check-result.fail{color:var(--danger);border:1px solid var(--danger);}
+
+  /* 选项 */
+  .choices{padding:0 20px 20px;}
+  .choice-btn{
+    display:block;width:100%;padding:14px 18px;
+    background:transparent;color:var(--text);
+    border:1px solid var(--border);
+    text-align:left;font-size:14px;
+    margin-bottom:8px;cursor:pointer;
+    transition:all .2s;
+    font-family:var(--font-body);
+    line-height:1.7;
+  }
+  .choice-btn:hover{
+    border-color:var(--accent);
+    background:rgba(232,184,109,0.05);
+  }
+  .choice-btn .choice-flavor{
+    font-size:12px;color:var(--text3);
+    margin-top:4px;font-style:italic;
+  }
+
+  /* 印记弹窗 */
+  .imprint-modal{
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(15,14,23,0.92);
+    display:none;align-items:center;justify-content:center;
+    z-index:100;padding:20px;
+  }
+  .imprint-modal.active{display:flex;}
+  .imprint-box{
+    background:var(--card);
+    border:1px solid var(--accent);
+    padding:40px 32px;text-align:center;
+    max-width:360px;width:100%;
+    animation:scaleIn .4s ease;
+  }
+  .imprint-box .imprint-star{
+    font-size:32px;color:var(--accent);
+    margin-bottom:12px;
+  }
+  .imprint-box .imprint-title{
+    font-family:var(--font-serif);
+    font-size:20px;color:var(--accent);
+    margin-bottom:8px;
+  }
+  .imprint-box .imprint-desc{
+    font-size:13px;color:var(--text2);
+    line-height:1.9;margin-bottom:20px;
+    font-family:var(--font-serif);
+    font-style:italic;
+  }
+  .imprint-box .imprint-effect{
+    font-size:11px;color:var(--text3);
+    border-top:1px solid var(--border);
+    padding-top:16px;
+    margin-bottom:24px;
+  }
+
+  /* ====== ENDING ====== */
+  .ending{
+    max-width:640px;margin:0 auto;padding:48px 24px 80px;
+  }
+  .ending h2{
+    font-family:var(--font-serif);
+    font-size:28px;color:var(--accent);
+    text-align:center;margin-bottom:8px;
+  }
+  .ending .ending-sub{
+    text-align:center;color:var(--text2);
+    font-size:13px;margin-bottom:40px;
+    font-family:var(--font-serif);
+    font-style:italic;
+  }
+
+  .ending-section{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:20px;margin-bottom:16px;
+  }
+  .ending-section h3{
+    font-size:11px;color:var(--text3);
+    letter-spacing:2px;text-transform:uppercase;
+    margin-bottom:16px;
+  }
+
+  .imprint-list{display:flex;flex-wrap:wrap;gap:8px;}
+  .imprint-tag{
+    background:var(--card2);
+    border:1px solid var(--border);
+    padding:8px 14px;
+    font-size:12px;
+  }
+  .imprint-tag .tag-name{color:var(--accent);font-weight:500;}
+  .imprint-tag .tag-desc{color:var(--text3);font-size:11px;margin-top:2px;}
+
+  .council-summary .voice-summary{
+    margin-bottom:10px;
+    font-size:13px;
+    color:var(--text2);
+    padding-left:12px;
+    border-left:2px solid var(--border);
+  }
+
+  .final-params{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .final-param{
+    text-align:center;padding:12px;
+    background:var(--card2);
+    font-size:11px;
+  }
+  .final-param .p-name{color:var(--text3);margin-bottom:4px;}
+  .final-param .p-val{color:var(--accent);font-size:18px;font-weight:700;}
+
+  /* ====== ANIMATIONS ====== */
+  @keyframes fadeIn{
+    from{opacity:0;transform:translateY(8px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  @keyframes scaleIn{
+    from{opacity:0;transform:scale(0.9);}
+    to{opacity:1;transform:scale(1);}
+  }
+
+  /* 打字机效果容器 */
+  .typewriter{overflow:hidden;}
+
+  /* ====== DASHBOARD ====== */
+  .dashboard{
+    max-width:640px;margin:0 auto;padding:0 20px 32px;
+  }
+  .dash-grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:12px;margin-bottom:16px;
+  }
+  .dash-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:16px;
+    text-align:center;
+  }
+  .dash-card .dash-val{
+    font-size:28px;font-weight:700;
+    font-family:var(--font-serif);
+  }
+  .dash-card .dash-label{
+    font-size:11px;color:var(--text3);
+    letter-spacing:2px;margin-top:4px;
+  }
+  .dash-card.accent .dash-val{color:var(--accent);}
+  .dash-card.success .dash-val{color:var(--success);}
+  .dash-card.mind .dash-val{color:var(--mind);}
+  .dash-card.danger .dash-val{color:var(--danger);}
+
+  .radar-wrap{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:24px 16px;margin-bottom:16px;
+    text-align:center;
+  }
+  .radar-wrap h3{
+    font-size:11px;color:var(--text3);
+    letter-spacing:2px;margin-bottom:16px;
+  }
+  .radar-legend{
+    display:flex;flex-wrap:wrap;gap:10px;
+    justify-content:center;margin-top:8px;
+    font-size:10px;color:var(--text3);
+  }
+  .radar-legend span{display:flex;align-items:center;gap:4px;}
+  .radar-legend .dot{
+    display:inline-block;width:6px;height:6px;
+    border-radius:50%;
+  }
+  .radar-legend .dot.player{background:var(--accent);}
+  .radar-legend .dot.baseline{background:var(--border);}
+
+  /* ====== IMPROVEMENT PLAN ====== */
+  .plan-section{
+    max-width:640px;margin:0 auto;padding:0 20px 40px;
+  }
+  .plan-section h2{
+    font-family:var(--font-serif);
+    font-size:22px;color:var(--accent);
+    text-align:center;margin-bottom:4px;
+  }
+  .plan-section .plan-sub{
+    text-align:center;color:var(--text2);
+    font-size:12px;margin-bottom:28px;
+    font-family:var(--font-serif);
+    font-style:italic;
+  }
+  .plan-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:20px;margin-bottom:12px;
+  }
+  .plan-card.improve{border-left:3px solid var(--danger);}
+  .plan-card.leverage{border-left:3px solid var(--success);}
+  .plan-card.mindset{border-left:3px solid var(--accent);}
+  .plan-card .plan-header{
+    display:flex;justify-content:space-between;
+    align-items:center;margin-bottom:10px;
+  }
+  .plan-card .plan-title{
+    font-size:14px;font-weight:600;
+  }
+  .plan-card .plan-tag{
+    font-size:10px;padding:2px 8px;
+    border:1px solid var(--border);
+    color:var(--text3);letter-spacing:1px;
+  }
+  .plan-card .plan-tag.improve-tag{border-color:var(--danger);color:var(--danger);}
+  .plan-card .plan-tag.leverage-tag{border-color:var(--success);color:var(--success);}
+  .plan-card .plan-tag.mindset-tag{border-color:var(--accent);color:var(--accent);}
+  .plan-card .plan-why{
+    font-size:12px;color:var(--text2);
+    font-family:var(--font-serif);
+    font-style:italic;margin-bottom:12px;
+    line-height:1.8;
+  }
+  .plan-card .plan-actions{
+    list-style:none;padding:0;
+  }
+  .plan-card .plan-actions li{
+    font-size:13px;color:var(--text);
+    padding:6px 0 6px 16px;
+    border-left:2px solid var(--border);
+    margin-bottom:4px;line-height:1.7;
+  }
+  .plan-card .plan-actions li::before{
+    content:"→ ";color:var(--accent);
+  }
+  .plan-summary{
+    background:var(--card2);
+    border:1px solid var(--accent);
+    padding:24px;margin-top:20px;
+    text-align:center;
+  }
+  .plan-summary .summary-text{
+    font-family:var(--font-serif);
+    font-size:15px;line-height:2.2;
+    color:var(--text);
+  }
+  .plan-summary .summary-speaker{
+    font-size:11px;color:var(--accent);
+    letter-spacing:2px;margin-top:12px;
+  }
+
+  /* ====== PROFILE SCREEN ====== */
+  .profile-heading{
+    font-family:var(--font-serif);
+    font-size:22px;color:var(--accent);
+    text-align:center;margin:32px 0 8px;
+  }
+  .profile-sub{
+    text-align:center;color:var(--text2);
+    font-size:12px;margin-bottom:28px;
+    font-family:var(--font-serif);font-style:italic;
+  }
+  .profile-form{max-width:440px;margin:0 auto;}
+  .profile-field{margin-bottom:18px;}
+  .profile-label{
+    display:block;font-size:11px;color:var(--text3);
+    letter-spacing:2px;margin-bottom:6px;
+  }
+  .profile-select,.profile-input{
+    width:100%;padding:10px 14px;
+    background:var(--card);color:var(--text);
+    border:1px solid var(--border);
+    font-size:14px;font-family:var(--font-body);
+  }
+  .profile-select:focus,.profile-input:focus{
+    outline:none;border-color:var(--accent);
+  }
+  .profile-chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .profile-chips .chip{
+    padding:6px 14px;font-size:12px;
+    background:var(--card);color:var(--text2);
+    border:1px solid var(--border);cursor:pointer;
+    transition:all .2s;font-family:var(--font-body);
+  }
+  .profile-chips .chip:hover{border-color:var(--accent);color:var(--text);}
+  .profile-chips .chip.selected{
+    border-color:var(--accent);color:var(--accent);
+    background:rgba(232,184,109,0.08);
+  }
+
+  /* ====== SPACE HUB ====== */
+  .space-hub{max-width:720px;margin:0 auto;padding:24px 20px 60px;}
+  .space-header{
+    display:flex;justify-content:space-between;
+    align-items:flex-start;margin-bottom:24px;
+  }
+  .space-title{
+    font-family:var(--font-serif);
+    font-size:22px;color:var(--accent);
+    margin-bottom:4px;
+  }
+  .space-subtitle{
+    font-size:12px;color:var(--text2);
+    font-family:var(--font-serif);font-style:italic;
+  }
+  .btn-sm{padding:8px 16px;font-size:12px;width:auto;}
+
+  /* Tabs */
+  .space-tabs{
+    display:flex;gap:2px;margin-bottom:24px;
+    border-bottom:1px solid var(--border);
+  }
+  .space-tab{
+    padding:10px 18px;font-size:13px;
+    background:none;color:var(--text3);
+    border:none;border-bottom:2px solid transparent;
+    cursor:pointer;transition:all .2s;
+    font-family:var(--font-body);
+  }
+  .space-tab:hover{color:var(--text);}
+  .space-tab.active{
+    color:var(--accent);border-bottom-color:var(--accent);
+  }
+  .space-tab-content{display:none;}
+  .space-tab-content.active{display:block;}
+
+  /* Space card */
+  .space-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:20px;margin-bottom:16px;
+  }
+  .space-card-title{
+    font-size:11px;color:var(--text3);
+    letter-spacing:2px;text-transform:uppercase;
+    margin-bottom:16px;
+  }
+  .space-card-desc{
+    font-size:12px;color:var(--text2);margin-bottom:12px;
+  }
+
+  /* Trust grid */
+  .trust-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:8px;
+  }
+  .trust-cell{
+    background:var(--card2);border:1px solid var(--border);
+    padding:14px 12px;text-align:center;
+  }
+  .trust-cell .tc-name{font-size:12px;font-weight:500;margin-bottom:6px;}
+  .trust-cell .tc-bar-bg{
+    height:3px;background:var(--border);
+    border-radius:2px;margin-bottom:4px;position:relative;overflow:hidden;
+  }
+  .trust-cell .tc-bar-fill{
+    height:100%;position:absolute;top:0;
+    transition:width .5s;
+  }
+  .trust-cell .tc-bar-fill.positive{background:var(--success);right:50%;}
+  .trust-cell .tc-bar-fill.negative{background:var(--danger);left:50%;}
+  .trust-cell .tc-score{font-size:11px;color:var(--accent);}
+  .trust-cell .tc-label{font-size:10px;color:var(--text3);margin-top:2px;}
+
+  /* Imprint gallery */
+  .imprint-gallery{
+    display:grid;grid-template-columns:repeat(5,1fr);
+    gap:8px;
+  }
+  .imprint-gallery-item{
+    background:var(--card2);border:1px solid var(--border);
+    padding:16px 10px;text-align:center;
+  }
+  .imprint-gallery-item.collected{border-color:var(--accent);}
+  .imprint-gallery-item.locked{opacity:0.4;}
+  .imprint-gallery-item .imprint-icon{
+    font-size:20px;margin-bottom:6px;
+  }
+  .imprint-gallery-item .imprint-name{
+    font-size:11px;font-weight:500;color:var(--accent);
+  }
+  .imprint-gallery-item.locked .imprint-name{color:var(--text3);}
+  .imprint-gallery-item .imprint-count{
+    font-size:10px;color:var(--text3);margin-top:2px;
+  }
+
+  /* Trend grid */
+  .trend-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:8px;
+  }
+  .trend-cell{padding:10px;}
+  .trend-cell .tcn-name{
+    font-size:10px;color:var(--text3);
+    margin-bottom:6px;text-align:center;
+  }
+  .trend-cell .tcn-bars{
+    display:flex;align-items:flex-end;gap:3px;
+    height:32px;justify-content:center;
+  }
+  .trend-cell .tcn-bar{
+    width:8px;border-radius:1px;min-height:2px;
+    background:var(--accent);
+  }
+
+  /* Company radar */
+  .company-top3{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+  .company-card{
+    background:var(--card);border:1px solid var(--border);
+    padding:18px;cursor:pointer;transition:all .2s;
+    display:flex;align-items:center;gap:14px;
+  }
+  .company-card:hover{border-color:var(--accent);}
+  .company-card .c-rank{
+    font-size:18px;font-weight:700;font-family:var(--font-serif);
+    color:var(--accent);min-width:30px;text-align:center;
+  }
+  .company-card .c-info{flex:1;}
+  .company-card .c-name{font-size:15px;font-weight:600;}
+  .company-card .c-desc{font-size:11px;color:var(--text3);margin-top:2px;}
+  .company-card .c-tags{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
+  .company-card .c-tag{
+    font-size:10px;padding:1px 8px;
+    border:1px solid var(--border);color:var(--text3);
+  }
+  .company-card .c-match{
+    font-size:24px;font-weight:700;font-family:var(--font-serif);
+    min-width:55px;text-align:center;
+  }
+  .company-card .c-match.high{color:var(--success);}
+  .company-card .c-match.mid{color:var(--accent);}
+  .company-card .c-match.low{color:var(--danger);}
+  .company-all-section{margin-bottom:16px;text-align:center;}
+
+  /* Company detail overlay */
+  .company-detail-overlay{
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(15,14,23,0.92);
+    display:none;align-items:center;justify-content:center;
+    z-index:200;padding:20px;
+  }
+  .company-detail-overlay.active{display:flex;}
+  .company-detail-card{
+    background:var(--card);border:1px solid var(--accent);
+    padding:32px;max-width:560px;width:100%;
+    max-height:85vh;overflow-y:auto;
+  }
+  .company-detail-card .cd-name{
+    font-family:var(--font-serif);font-size:20px;
+    color:var(--accent);margin-bottom:4px;
+  }
+  .company-detail-card .cd-match-big{
+    font-size:36px;font-weight:700;font-family:var(--font-serif);
+  }
+  .gap-bar-wrap{margin-top:20px;}
+  .gap-row{
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:10px;font-size:12px;
+  }
+  .gap-row .gap-label{min-width:70px;color:var(--text2);}
+  .gap-row .gap-track{
+    flex:1;height:6px;background:var(--card2);
+    border-radius:3px;position:relative;
+  }
+  .gap-row .gap-company-mark,.gap-row .gap-user-mark{
+    position:absolute;top:-3px;width:8px;height:12px;
+    border-radius:1px;
+  }
+  .gap-row .gap-company-mark{background:var(--text3);}
+  .gap-row .gap-user-mark{background:var(--accent);}
+  .gap-row .gap-delta{min-width:50px;text-align:right;font-size:11px;}
+  .gap-row .gap-delta.close{color:var(--success);}
+  .gap-row .gap-delta.medium{color:var(--accent);}
+  .gap-row .gap-delta.far{color:var(--danger);}
+
+  /* Growth workshop */
+  .progress-bar-wrap{
+    background:var(--card2);height:8px;
+    border-radius:4px;margin-bottom:8px;overflow:hidden;
+  }
+  .progress-bar-fill{
+    height:100%;background:var(--accent);
+    border-radius:4px;transition:width .3s;
+  }
+  .progress-bar-label{
+    font-size:11px;color:var(--text3);
+    text-align:right;margin-bottom:16px;
+  }
+  .challenge-list{display:flex;flex-direction:column;gap:6px;}
+  .challenge-item{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:10px 14px;background:var(--card);
+    border:1px solid var(--border);font-size:13px;
+    cursor:pointer;transition:all .2s;
+  }
+  .challenge-item.completed{opacity:0.5;}
+  .challenge-item.completed .challenge-text{text-decoration:line-through;}
+  .challenge-item input[type=checkbox]{
+    accent-color:var(--accent);margin-top:3px;flex-shrink:0;
+  }
+  .followup-message{
+    font-family:var(--font-serif);font-size:13px;
+    font-style:italic;color:var(--text2);
+    padding:12px 16px;border-left:3px solid var(--mind);
+    background:var(--card2);line-height:1.9;
+  }
+
+  /* Committee lounge */
+  .lounge-greeting{
+    text-align:center;margin-bottom:24px;
+    font-family:var(--font-serif);
+    font-size:18px;color:var(--accent);
+  }
+  .lounge-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:12px;margin-bottom:20px;
+  }
+  .lounge-member{
+    background:var(--card);border:1px solid var(--border);
+    padding:20px 14px;text-align:center;cursor:pointer;
+    transition:all .2s;
+  }
+  .lounge-member:hover{border-color:var(--mind);}
+  .lounge-member .lm-avatar{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--card2);border:1px solid var(--border);
+    margin:0 auto 10px;display:flex;align-items:center;
+    justify-content:center;font-size:18px;color:var(--mind);
+  }
+  .lounge-member .lm-name{font-size:12px;font-weight:500;}
+  .lounge-member .lm-trust{font-size:10px;color:var(--text3);margin-top:4px;}
+  .lounge-member .lm-relation{font-size:10px;margin-top:2px;}
+  .lounge-dialogue{
+    background:var(--card2);border-left:3px solid var(--mind);
+    padding:20px;margin-top:12px;animation:fadeIn .3s ease;
+  }
+  .lounge-dialogue .ld-speaker{
+    font-size:11px;color:var(--mind);
+    letter-spacing:2px;margin-bottom:8px;
+  }
+  .lounge-dialogue .ld-text{
+    font-family:var(--font-serif);font-size:14px;
+    line-height:2;color:var(--text);
+  }
+
+  /* Industry selection screen */
+  .industry-heading{
+    font-family:var(--font-serif);font-size:clamp(22px,4vw,30px);
+    font-weight:600;color:var(--accent);text-align:center;
+    margin:16px 0 8px;
+  }
+  .industry-sub{
+    text-align:center;color:var(--text2);font-size:13px;
+    margin-bottom:32px;
+  }
+  .industry-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:14px;max-width:720px;margin:0 auto;
+  }
+  .industry-card{
+    background:var(--card);border:1px solid var(--border);
+    padding:24px 16px;text-align:center;cursor:pointer;
+    transition:all .2s;text-decoration:none;color:inherit;
+  }
+  .industry-card:hover{border-color:var(--accent);background:var(--card2);}
+  .industry-card .ic-icon{font-size:32px;margin-bottom:10px;}
+  .industry-card .ic-name{
+    font-size:14px;font-weight:600;color:var(--text);
+    margin-bottom:6px;
+  }
+  .industry-card .ic-desc{
+    font-size:11px;color:var(--text3);line-height:1.6;
+  }
+
+  /* ====== RESPONSIVE ====== */
+  @media(max-width:640px){
+    .trust-grid,.lounge-grid,.trend-grid{grid-template-columns:repeat(2,1fr);}
+    .imprint-gallery,.industry-grid{grid-template-columns:repeat(2,1fr);}
+    .space-tabs{overflow-x:auto;flex-wrap:nowrap;}
+    .space-tab{white-space:nowrap;flex-shrink:0;}
+    .company-detail-card{max-width:95vw;padding:24px 16px;}
+    .space-header{flex-direction:column;gap:12px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== INDUSTRY SCREEN ========== -->
+<div id="screen-industry" class="screen">
+  <div class="intro" style="max-width:640px;">
+    <div id="industry-back-link" style="text-align:center;margin-bottom:8px;">
+      <a href="javascript:showSpace()" style="color:var(--text3);font-size:12px;text-decoration:none;">← 返回自洽空间</a>
+    </div>
+    <h2 class="industry-heading">这次想探索哪个方向？</h2>
+    <div class="industry-sub">选择目标行业，事件将围绕该领域的真实场景展开</div>
+    <div class="industry-grid" id="industry-grid">
+      <div class="industry-card" data-industry="B端" onclick="selectIndustry('B端')">
+        <div class="ic-icon">🏢</div>
+        <div class="ic-name">B端 · 企业服务</div>
+        <div class="ic-desc">SaaS、PaaS、toB软件<br>客户定制化 vs 标准化路线</div>
+      </div>
+      <div class="industry-card" data-industry="C端" onclick="selectIndustry('C端')">
+        <div class="ic-icon">📱</div>
+        <div class="ic-name">C端 · 消费产品</div>
+        <div class="ic-desc">电商、社交、内容平台<br>用户增长 vs 产品体验</div>
+      </div>
+      <div class="industry-card" data-industry="体制内" onclick="selectIndustry('体制内')">
+        <div class="ic-icon">🏛️</div>
+        <div class="ic-name">体制内 · 公共部门</div>
+        <div class="ic-desc">政府、国企、事业单位<br>流程规范 vs 创新突破</div>
+      </div>
+      <div class="industry-card" data-industry="外企" onclick="selectIndustry('外企')">
+        <div class="ic-icon">🌐</div>
+        <div class="ic-name">外企 · 跨国</div>
+        <div class="ic-desc">咨询、科技外企、跨国公司<br>总部战略 vs 中国区自主</div>
+      </div>
+      <div class="industry-card" data-industry="创业" onclick="selectIndustry('创业')">
+        <div class="ic-icon">🚀</div>
+        <div class="ic-name">创业 · 早期公司</div>
+        <div class="ic-desc">成长期、Pre-A到B轮<br>极速迭代 vs 团队稳定</div>
+      </div>
+      <div class="industry-card" data-industry="" onclick="selectIndustry('')" style="border-style:dashed;">
+        <div class="ic-icon">🎲</div>
+        <div class="ic-name">不限 · 通用</div>
+        <div class="ic-desc">不设行业限制<br>体验最广泛的职场场景</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== INTRO SCREEN ========== -->
+<div id="screen-intro" class="screen">
+  <div class="intro">
+    <div id="intro-back-link" style="display:none;text-align:center;margin-bottom:8px;">
+      <a href="javascript:showSpace()" style="color:var(--text3);font-size:12px;text-decoration:none;">← 返回自洽空间</a>
+    </div>
+    <h1>我的职场模拟器</h1>
+    <div class="subtitle">你脑海里的 8 个声音</div>
+
+    <div class="prologue">
+      <p>你不是在填写一份职业测评。</p>
+      <p>你即将进入三个月的实习。每一天，你都要做选择——加班还是回家，说话还是沉默，争取还是退让。</p>
+      <p>你的身体里住着八个委员。它们不会一直安静。有时候它们帮你，有时候它们吵得你头疼。</p>
+      <p>你听不见别人的。你只能听见自己的。</p>
+      <p style="color:var(--accent);margin-top:16px;">—— 准备好了吗？</p>
+    </div>
+
+    <div class="slider-group" id="intro-sliders"></div>
+    <button class="btn" onclick="startGame()">进入职场</button>
+  </div>
+</div>
+
+<!-- ========== GAME SCREEN ========== -->
+<div id="screen-game" class="screen">
+  <div class="game">
+    <div class="status-bar">
+      <div class="status-pill">第 <b id="disp-week">1</b> 周</div>
+      <div class="status-pill">身心 <b id="disp-energy">70</b></div>
+      <div class="status-pill">满足 <b id="disp-satisfaction">50</b></div>
+      <div class="status-pill">共鸣 <b id="disp-fit">50</b></div>
+    </div>
+
+    <div class="route-indicator">
+      当前路线：<span class="current-route" id="disp-route">标准线</span>
+    </div>
+
+    <div id="event-container"></div>
+  </div>
+</div>
+
+<!-- ========== ENDING SCREEN ========== -->
+<div id="screen-ending" class="screen">
+  <div class="ending">
+    <h2>三个月过去了</h2>
+    <div class="ending-sub">你收集到的不是分数，是声音。</div>
+
+    <div class="ending-section">
+      <h3>职场印记</h3>
+      <div class="imprint-list" id="ending-imprints">
+        <div class="imprint-tag">
+          <div class="tag-name">暂无印记</div>
+          <div class="tag-desc">这三个月过得很安静。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ending-section">
+      <h3>委员会的总结</h3>
+      <div class="council-summary" id="ending-council"></div>
+    </div>
+
+    <div class="ending-section">
+      <h3>最终参数</h3>
+      <div class="final-params" id="ending-params"></div>
+    </div>
+
+    <!-- 职场基因看板 -->
+    <div class="ending-section" id="section-dashboard" style="display:none;">
+      <h3>职场基因看板</h3>
+      <div class="dash-grid" id="dash-stats"></div>
+      <div class="radar-wrap">
+        <h3>你的 8 维职场基因图谱</h3>
+        <div id="radar-chart"></div>
+        <div class="radar-legend">
+          <span><span class="dot player"></span> 你的参数</span>
+          <span><span class="dot baseline"></span> 基线 (5)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 针对性提升计划 -->
+    <div class="ending-section" id="section-plan" style="display:none;">
+      <h3>委员会给未来的信</h3>
+      <div class="plan-card" id="plan-card-1"></div>
+      <div class="plan-card" id="plan-card-2"></div>
+      <div class="plan-card" id="plan-card-3"></div>
+      <div class="plan-card" id="plan-card-4"></div>
+      <div class="plan-summary" id="plan-summary"></div>
+    </div>
+
+    <button class="btn" onclick="enterSpaceFromEnding()" style="margin-top:24px;">继续</button>
+    <button class="btn btn-secondary" onclick="startNewRun()">再来一局</button>
+    <button class="btn btn-secondary" onclick="showDebugLog()" style="margin-top:4px;">查看完整日志</button>
+  </div>
+</div>
+
+<!-- ========== IMPRINT MODAL ========== -->
+<!-- ========== PROFILE SCREEN ========== -->
+<div id="screen-profile" class="screen">
+  <div class="intro" style="max-width:520px;">
+    <h2 class="profile-heading">让委员会更了解你</h2>
+    <div class="profile-sub">这些信息帮助我们为你生成更贴合的建议（可跳过）</div>
+    <div class="profile-form">
+      <div class="profile-field">
+        <label class="profile-label">MBTI 类型</label>
+        <select id="pf-mbti" class="profile-select">
+          <option value="">不想说</option>
+          <option>INTJ</option><option>INTP</option><option>ENTJ</option><option>ENTP</option>
+          <option>INFJ</option><option>INFP</option><option>ENFJ</option><option>ENFP</option>
+          <option>ISTJ</option><option>ISFJ</option><option>ESTJ</option><option>ESFJ</option>
+          <option>ISTP</option><option>ISFP</option><option>ESTP</option><option>ESFP</option>
+        </select>
+      </div>
+      <div class="profile-field">
+        <label class="profile-label">大学专业</label>
+        <input type="text" id="pf-major" class="profile-input" placeholder="如：计算机科学、金融、新闻传播...">
+      </div>
+      <div class="profile-field">
+        <label class="profile-label">毕业年份</label>
+        <input type="text" id="pf-grad" class="profile-input" placeholder="如：2026">
+      </div>
+      <div class="profile-field">
+        <label class="profile-label">职业兴趣方向（可多选）</label>
+        <div class="profile-chips" id="pf-interests">
+          <button class="chip" data-v="B端">B端 · 企业服务</button>
+          <button class="chip" data-v="C端">C端 · 消费产品</button>
+          <button class="chip" data-v="体制内">体制内 · 公共部门</button>
+          <button class="chip" data-v="外企">外企 · 跨国</button>
+          <button class="chip" data-v="创业">创业 · 早期公司</button>
+          <button class="chip" data-v="不限">不限 · 都看看</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn" onclick="saveProfileAndEnterSpace()" style="margin-top:24px;">进入自洽空间</button>
+    <button class="btn btn-secondary" onclick="skipProfile()">跳过，直接进入</button>
+  </div>
+</div>
+
+<!-- ========== SPACE SCREEN ========== -->
+<div id="screen-space" class="screen">
+  <div class="space-hub">
+    <div class="space-header">
+      <div>
+        <h2 class="space-title">自洽空间</h2>
+        <div class="space-subtitle" id="space-greeting">欢迎回来</div>
+      </div>
+      <button class="btn btn-sm" onclick="startNewRun()" style="width:auto;padding:8px 18px;font-size:12px;">再来一局</button>
+    </div>
+    <nav class="space-tabs" id="space-tabs">
+      <button class="space-tab active" data-tab="tab-gene">基因档案</button>
+      <button class="space-tab" data-tab="tab-company">公司雷达</button>
+      <button class="space-tab" data-tab="tab-workshop">成长工坊</button>
+      <button class="space-tab" data-tab="tab-lounge">委员会休息室</button>
+    </nav>
+    <div class="space-tab-content active" id="tab-gene">
+      <div class="space-card"><h4 class="space-card-title">个人档案</h4><div id="gene-profile-card"></div></div>
+      <div class="space-card"><h4 class="space-card-title">8 维职场基因图谱（含历史对比）</h4><div class="gene-radar-controls" id="gene-radar-controls"></div><div class="radar-wrap" id="gene-radar-wrap"></div></div>
+      <div class="space-card"><h4 class="space-card-title">委员会亲密度</h4><div class="trust-grid" id="gene-trust-grid"></div></div>
+      <div class="space-card"><h4 class="space-card-title">印记收藏馆</h4><div class="imprint-gallery" id="gene-imprint-gallery"></div></div>
+      <div class="space-card"><h4 class="space-card-title">历史参数走势</h4><div class="trend-grid" id="gene-trend-grid"></div></div>
+    </div>
+    <div class="space-tab-content" id="tab-company">
+      <div class="space-card"><h4 class="space-card-title">基于你最新参数的匹配结果</h4><p class="space-card-desc">来自 14 家中国公司的 8 维画像，通过风格重合度计算匹配</p></div>
+      <div class="company-top3" id="company-top3"></div>
+      <div class="company-all-section"><button class="btn btn-text" id="btn-toggle-all-companies" onclick="toggleAllCompanies()">查看全部 14 家公司 ▼</button><div class="company-all-list" id="company-all-list" style="display:none;"></div></div>
+      <div class="company-detail-overlay" id="company-detail-overlay" onclick="if(event.target===this)hideCompanyDetail()">
+        <div class="company-detail-card" id="company-detail-card">
+          <div class="cd-name" id="cd-name"></div>
+          <div class="cd-match-big" id="cd-match"></div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;" id="cd-desc"></div>
+          <div style="margin-bottom:12px;" id="cd-tags"></div>
+          <div class="gap-bar-wrap" id="cd-gaps"></div>
+          <div id="cd-start-btn-wrap"></div>
+          <button class="btn btn-secondary" onclick="hideCompanyDetail()" style="margin-top:12px;width:100%;">关闭</button>
+        </div>
+      </div>
+    </div>
+    <div class="space-tab-content" id="tab-workshop">
+      <div class="space-card"><h4 class="space-card-title">30 天自我探索挑战</h4><div class="progress-bar-wrap"><div class="progress-bar-fill" id="workshop-progress-fill"></div></div><div class="progress-bar-label" id="workshop-progress-label">0/30</div></div>
+      <div class="space-card"><div class="followup-message" id="workshop-followup-msg"></div></div>
+      <div class="challenge-list" id="workshop-challenge-list"></div>
+      <div class="workshop-actions" style="text-align:center;margin-top:16px;"><button class="btn btn-sm btn-secondary" onclick="regenerateChallenges()" style="width:auto;padding:8px 16px;font-size:12px;">重新生成挑战</button></div>
+    </div>
+    <div class="space-tab-content" id="tab-lounge">
+      <div class="lounge-greeting" id="lounge-greeting"></div>
+      <div class="lounge-grid" id="lounge-grid"></div>
+      <div class="lounge-dialogue" id="lounge-dialogue" style="display:none;"></div>
+    </div>
+    <div class="space-footer" style="text-align:center;margin-top:32px;">
+      <button class="btn btn-text" style="color:var(--danger);font-size:11px;background:none;border:none;cursor:pointer;width:auto;margin:0 auto;" onclick="if(confirm('确定清除所有历史记录和档案？此操作不可恢复。'))clearAllHistory()">清除所有历史记录</button>
+    </div>
+  </div>
+</div>
+
+<div class="imprint-modal" id="imprint-modal">
+  <div class="imprint-box">
+    <div class="imprint-star">✦</div>
+    <div class="imprint-title" id="imprint-title"></div>
+    <div class="imprint-desc" id="imprint-desc"></div>
+    <div class="imprint-effect" id="imprint-effect"></div>
+    <button class="btn" onclick="closeImprint()" style="max-width:200px;margin:0 auto;">收下</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 我的职场模拟器 v0.2 - 风格化Demo
+// ============================================================
+
+const PARAMS = [
+  {id:'o',name:'加班委员',lo:'到点走人',hi:'007是福报',desc:'"deadline是第一生产力。"'},
+  {id:'c',name:'协作委员',lo:'独来独往',hi:'团队粘合剂',desc:'"大家一起走，才能走得更远。"'},
+  {id:'l',name:'领导委员',lo:'做好本职',hi:'主动扛事',desc:'"这个位置，你值得。"'},
+  {id:'p',name:'政治委员',lo:'不闻窗外',hi:'信息中枢',desc:'"这次站队，很重要。"'},
+  {id:'f',name:'反馈委员',lo:'屏蔽噪音',hi:'渴望认可',desc:'"你做得不够好。这是事实。"'},
+  {id:'g',name:'成长委员',lo:'够用就行',hi:'终身学习',desc:'"现在吃点苦，未来会感谢自己。"'},
+  {id:'i',name:'创新委员',lo:'循规蹈矩',hi:'颠覆者',desc:'"这个可以做得更好。试试？"'},
+  {id:'w',name:'WLB委员',lo:'工作狂',hi:'生活优先',desc:'"你累了。你需要休息。"'}
+];
+
+const COMPANIES = [
+  {name:'华为',desc:'狼性文化图腾，用最苦的活换最快的成长',tags:['高薪','技术顶流','奋斗者协议'],o:9,c:5,l:2,p:9,f:7,g:9,i:4,w:1,industry:['B端']},
+  {name:'腾讯',desc:'产品帝国，好福利养着最聪明的人做最难的事',tags:['福利好','产品文化','赛马机制'],o:7,c:7,l:5,p:7,f:6,g:8,i:6,w:3,industry:['C端']},
+  {name:'阿里巴巴',desc:'价值观驱动的江湖，拥抱变化或者被变化拥抱',tags:['江湖气','末位淘汰','拥抱变化'],o:8,c:4,l:3,p:9,f:8,g:8,i:5,w:2,industry:['B端','C端']},
+  {name:'字节跳动',desc:'年轻人主导的效率机器，快得让你来不及焦虑',tags:['扁平','极速成长','永远缺人'],o:8,c:6,l:6,p:7,f:4,g:9,i:7,w:2,industry:['C端']},
+  {name:'拼多多',desc:'用极致的时薪换极致的薪资，适合想拼一把的人',tags:['超高薪','超长工时','简单直接'],o:10,c:2,l:2,p:10,f:5,g:6,i:3,w:1,industry:['C端']},
+  {name:'小红书',desc:'既有社区的慢温度，也有商业化的快节奏',tags:['年轻化','氛围好','创意驱动'],o:5,c:7,l:7,p:5,f:4,g:7,i:7,w:5,industry:['C端']},
+  {name:'国家电网',desc:'体制内的终极答案之一：稳定压倒一切',tags:['铁饭碗','流程长','生活优先'],o:1,c:8,l:2,p:2,f:10,g:3,i:1,w:9,industry:['体制内']},
+  {name:'微软中国',desc:'外企养老院？不，是正常人该有的工作节奏',tags:['WLB标杆','尊重个体','全球化'],o:2,c:9,l:8,p:3,f:6,g:6,i:7,w:9,industry:['外企']},
+  {name:'创业公司',desc:'一切自己说了算，但一切也都自己扛',tags:['野蛮生长','全能锻炼','高风险高回报'],o:8,c:5,l:9,p:6,f:2,g:9,i:10,w:3,industry:['创业']},
+  {name:'比亚迪',desc:'新能源时代的制造狂魔，硬核且务实',tags:['实业','成长快','地处偏远'],o:7,c:4,l:3,p:6,f:7,g:7,i:4,w:3,industry:['B端']},
+  {name:'米哈游',desc:'二次元技术宅的天堂，为爱发电也能很富裕',tags:['技术理想主义','氛围开放','游戏'],o:6,c:7,l:7,p:5,f:3,g:8,i:9,w:4,industry:['C端']},
+  {name:'京东',desc:'东哥的兄弟文化，物流铁军的速度与激情',tags:['供应链','兄弟文化','执行力'],o:7,c:5,l:4,p:7,f:7,g:7,i:4,w:2,industry:['C端']},
+  {name:'网易',desc:'养猪场其实很佛系，产品慢工出细活',tags:['佛系','匠心','食堂好吃'],o:6,c:7,l:6,p:5,f:5,g:7,i:7,w:4,industry:['C端']},
+  {name:'招商银行',desc:'金融圈的零售之王，体面但规矩多',tags:['金融','体面','晋升慢'],o:5,c:5,l:3,p:6,f:9,g:5,i:2,w:4,industry:['体制内']},
+];
+
+const COUNCIL_PERSONALITY = {
+  o: {agree:['这才对嘛。','机会是拼出来的。','年轻时不拼什么时候拼？'],
+      disagree:['你明明说不想加班的。','又要重蹈覆辙？','你还记得上周的承诺吗？'],
+      high:['继续保持这个节奏！','三连胜！','我就知道你可以。'],
+      low:['你果然还是老样子。','每次到关键时刻就退。','不意外。']},
+  c: {agree:['大家一起走才能远。','团队需要这样的人。','你让他们感到被接纳。'],
+      disagree:['你确定要一个人扛？','团队会怎么看你？','这不是逞强的时候。'],
+      high:['你是团队的粘合剂。','大家都信任你。','这种能力很稀缺。'],
+      low:['你把自己孤立了。','一个人走得快，一群人走得远。','你需要盟友。']},
+  l: {agree:['去争取。','你值得更好的位置。','领导力和职位无关。'],
+      disagree:['又在退缩。','机会不会自己敲门。','你明明可以的。'],
+      high:['天生领导者。','他们已经在注意你了。','继续。'],
+      low:['你总是把自己放得太低。','为什么不试试？','你在怕什么？']},
+  p: {agree:['信息就是权力。','你看到了别人看不到的。','这是必要的。'],
+      disagree:['把头埋进沙子？','你会后悔不知道的。','职场不是温室。'],
+      high:['你是信息枢纽。','没有人能在你眼皮底下搞小动作。','这种敏感度是天赋。'],
+      low:['你太天真了。','事情没有那么简单。','醒醒。']},
+  f: {agree:['你需要被看见。','认可不是软弱。','你的努力值得被承认。'],
+      disagree:['你不在乎吗？','为什么总是你付出、别人收获？','这不公平。'],
+      high:['你渴望被认可，这很正常。','去要你该得的。','别让他们忽视你。'],
+      low:['你把自己封闭了。','反馈不是毒药。','听听别人怎么说。']},
+  g: {agree:['这才叫成长。','投资自己永远是对的。','未来的你会感谢现在。'],
+      disagree:['就这点本事？','你可以学得更多。','别满足于现状。'],
+      high:['学习机器。','你停不下来，对吗？','这种饥渴感会带你很远。'],
+      low:['你在浪费潜力。','就这样了吗？','舒服区是个陷阱。']},
+  i: {agree:['打破它。','为什么不试试新的？','规则是写给遵守者看的。'],
+      disagree:['又是老一套。','你就不能有点创意？','循规蹈矩很安全，也很无聊。'],
+      high:['颠覆者。','你生来就不安分。','这个世界需要你的疯狂。'],
+      low:['你怕出错？','不敢冒险的人，得不到意外。','试试又不会死。']},
+  w: {agree:['对，就是这样。','你需要休息。','这不是逃避，是必要。'],
+      disagree:['你又在牺牲自己。','说好的边界呢？','你还记得自己的承诺吗？'],
+      high:['保护自己是对的。','工作不是全部。','你的生活值得被守护。'],
+      low:['你在燃烧自己。','停下来。','求你了。']}
+};
+
+// 事件池 - 每个事件有3个版本（crit/success/fail）
+const EVENT_POOL = [
+  {
+    id: 'overtime_crunch',
+    week: [1,2,3,4,5],
+    difficulty: 12, checkParam: 'o',
+    industry: ['B端','C端','体制内','外企','创业'],
+    versions: {
+      crit: {
+        scene: '项目deadline提前三天。群里炸开了锅，有人在抱怨，有人在沉默。',
+        text: '但你出奇地冷静。这种节奏你似曾相识。你快速拆分了任务，甚至发现了一个能节省两小时的流程漏洞。\n\n组长看你的眼神变了。不是惊讶，是重新评估。',
+        choices: [
+          {text:'顺势接过协调权，带团队重新分工',eff:{o:2,l:2,g:1},meta:['leadership','take_charge']},
+          {text:'修复漏洞，把自己的部分提前完成',eff:{o:1,c:1,i:1},meta:['innovation','quiet_contribution']},
+          {text:'把漏洞报告给上级，不抢功',eff:{p:1,c:1},meta:['political_awareness','humble']}
+        ]
+      },
+      success: {
+        scene: '项目deadline提前三天。群里炸开了锅。',
+        text: '你深呼吸，开始按优先级处理自己的部分。加班到晚上十点，总算没有拖后腿。\n\n地铁末班车上，你看着窗外闪过的广告灯箱，突然意识到自己已经想不起上次准时下班是什么时候。',
+        choices: [
+          {text:'第二天早点到公司，继续推进',eff:{o:2,g:1},meta:['diligent']},
+          {text:'在群里同步进度，然后下线',eff:{o:1,c:1,w:1},meta:['balanced']},
+          {text:'私聊组长确认优先级，避免做无用功',eff:{p:1,l:1},meta:['political','strategic']}
+        ]
+      },
+      fail: {
+        scene: '项目deadline提前三天。群里炸开了锅。',
+        text: '你盯着满屏的待办事项，手指悬在键盘上，脑子一片空白。\n\n"我不行"——这个念头来得如此自然，你甚至没有时间去反驳它。\n\n手机亮了。妈妈问你最近怎么样。你打了"还好"，然后删掉了。',
+        choices: [
+          {text:'硬撑，做到凌晨两点',eff:{o:3,energy:-25},meta:['burnout_risk']},
+          {text:'承认自己跟不上，向组长求助',eff:{o:-1,p:-1,c:1},meta:['vulnerable','honest']},
+          {text:'请假，说家里有急事',eff:{energy:10,p:-2},meta:['avoidance']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'cross_dept',
+    week: [2,3,4,5,6],
+    difficulty: 10, checkParam: 'c',
+    industry: ['B端','C端','体制内','外企','创业'],
+    versions: {
+      crit: {
+        scene: '隔壁组的负责人给你发了一封邮件。标题写着"创新协作项目 - 诚邀参与"。',
+        text: '你注意到"诚邀"两个字。在职场邮件里，这个词通常意味着"期待你答应"。\n\n但你同时也注意到，这个项目的成员名单里，有两位总监。这不是普通的协作——这是一次被观察的机会。\n\n你的直觉告诉你：这是陷阱，也是阶梯。',
+        choices: [
+          {text:'回复接受，同时私下了解两位总监的风格差异',eff:{c:2,p:2,l:1},meta:['political','social_intelligence']},
+          {text:'约对方喝咖啡，先建立个人关系再谈项目',eff:{c:2,p:1,w:-1},meta:['relationship_first']},
+          {text:'提出一个具体的改进建议，用专业度打动对方',eff:{i:2,c:1},meta:['technical_credibility']}
+        ]
+      },
+      success: {
+        scene: '隔壁组的负责人给你发了一封邮件。标题写着"创新协作项目 - 诚邀参与"。',
+        text: '你打开日历。如果参加，接下来三周每周至少多八小时。如果不参加……\n\n你不确定"不参加"之后会发生什么。那种不确定本身，就是一种信息。\n\n【协作委员】在你脑子里说："这是一个信号。他们在观察谁愿意站出来。"\n\n【WLB委员】紧接着："上周你说这周要准时下班的。记得吗？"',
+        choices: [
+          {text:'积极加入，争取表现机会',eff:{c:2,l:2,o:1},meta:['ambitious','social']},
+          {text:'适度参与，不影响本职工作',eff:{c:1,w:1},meta:['cautious','balanced']},
+          {text:'婉拒，专注自己岗位',eff:{w:2,c:-1},meta:['boundary','focused']}
+        ]
+      },
+      fail: {
+        scene: '隔壁组的负责人给你发了一封邮件。标题写着"创新协作项目 - 诚邀参与"。',
+        text: '你不知道该回什么。\n\n"接受"意味着更多工作。"拒绝"意味着错过机会。"考虑一下"意味着拖延——而拖延本身就是一种回答。\n\n你把邮件标记为未读，关掉窗口。这种逃避让你松了口气，同时也让你觉得自己很渺小。\n\n下班路上，你一直在想：别人会怎么回？那个总是加班的同事，肯定接受了吧？',
+        choices: [
+          {text:'第二天硬着头皮回复"我很荣幸"',eff:{c:1,o:2,energy:-10},meta:['forced']},
+          {text:'假装没看到，等对方再来问',eff:{p:-1,c:-1},meta:['avoidance']},
+          {text:'转发给自己的mentor，问TA的意见',eff:{p:1,c:1},meta:['seek_guidance']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'meeting_speak',
+    week: [3,4,5,6,7],
+    difficulty: 11, checkParam: 'l',
+    industry: ['B端','C端','体制内','外企','创业'],
+    versions: {
+      crit: {
+        scene: '周会。总监在问一个数据问题，会议室沉默了三秒。',
+        text: '你知道答案。不是模糊的猜测，是你上周亲手核对过的数字。\n\n更关键的是，你同时意识到：这个问题的背后，是总监对某个决策的不确定。如果你能不仅给出数字，还能给出数字背后的趋势判断……\n\n你开口了。声音比想象中稳。',
+        choices: [
+          {text:'给出数据，同时指出一个没人注意到的风险',eff:{l:2,p:2,i:1},meta:['strategic_voice','first_risk_alert']},
+          {text:'给出数据，简短有力，然后闭嘴',eff:{l:2,f:1},meta:['concise','credibility']},
+          {text:'给出数据，主动提出下周做一个深度分析',eff:{l:1,g:2,o:1},meta:['take_on_more','growth']}
+        ]
+      },
+      success: {
+        scene: '周会。总监在问一个数据问题，会议室沉默了三秒。',
+        text: '你知道答案。至少，你知道一部分答案。\n\n要不要说？你快速评估：说对了，加分。说错了，暴露。不说，安全，但也没有存在感。\n\n会议室的空调嗡嗡响。你数到五。如果数到五还不开口，就放弃。\n\n三。四。',
+        choices: [
+          {text:'说出自己知道的部分，不确定的坦诚说明',eff:{l:2,c:1},meta:['honest_voice']},
+          {text:'举手说"我需要再确认一下，会后回复"',eff:{l:1,g:1},meta:['careful']},
+          {text:'保持沉默，会后再私聊总监',eff:{p:1,w:1},meta:['avoid_spotlight']}
+        ]
+      },
+      fail: {
+        scene: '周会。总监在问一个数据问题，会议室沉默了三秒。',
+        text: '你知道答案。你甚至把那个数字写在了笔记本上。\n\n但你的喉咙像是被什么堵住了。也许是害怕说错，也许是害怕说对——说对了意味着更多目光，更多期待，更多压力。\n\n有人回答了。不是你。\n\n会议继续。没有人注意到你没说话。这让你既庆幸，又失落。',
+        choices: [
+          {text:'会后发邮件补充自己的数据',eff:{l:1,f:1},meta:['follow_up']},
+          {text:'告诉自己下次一定开口，然后忘了这件事',eff:{w:1},meta:['self_deception']},
+          {text:'找mentor聊聊，为什么总是开不了口',eff:{g:2,c:1},meta:['seek_growth']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'feedback_bomb',
+    week: [4,5,6,7,8],
+    difficulty: 13, checkParam: 'f',
+    industry: ['B端','C端','体制内','外企','创业'],
+    versions: {
+      crit: {
+        scene: 'mentor把你叫到会议室。关上门。',
+        text: '"我需要跟你谈谈。"\n\n你注意到TA用的是"我"而不是"我们"。这意味着这是个人反馈，不是正式review。\n\n"你的技术能力没问题。但有人在抱怨你的沟通方式——太直接，不给人留面子。"\n\n你内心一动。这不是批评，这是情报。有人在背后说你。而mentor选择告诉你，而不是上报。这是一种信任，也是一种测试。',
+        choices: [
+          {text:'追问具体是谁、什么场景，收集情报',eff:{p:2,f:1},meta:['information_gathering']},
+          {text:'感谢反馈，问TA建议怎么调整',eff:{g:2,c:1,f:1},meta:['receptive','growth']},
+          {text:'坦诚说"我确实不擅长绕弯子，但我会注意场合"',eff:{c:2,f:2},meta:['authentic','self_aware']}
+        ]
+      },
+      success: {
+        scene: 'mentor把你叫到会议室。关上门。',
+        text: '"我需要跟你谈谈。"\n\n你的身体先于大脑做出反应——心跳加速，手心出汗。你讨厌这种生理反应，但它不受控制。\n\n"这周的项目，有几个地方可以做得更好。"\n\n你一边听，一边在心里辩解。但你也知道，辩解只会让你看起来防御。所以你点头，记笔记，说"谢谢，我回去想想"。\n\n走出会议室，你才发现自己一直屏着呼吸。',
+        choices: [
+          {text:'晚上复盘，列出自己的改进清单',eff:{g:2,f:1},meta:['self_improvement']},
+          {text:'找信任的同事聊聊，确认反馈是否客观',eff:{c:1,p:1},meta:['reality_check']},
+          {text:'情绪低落，但强迫自己完成当天任务',eff:{energy:-15,g:1},meta:['resilience']}
+        ]
+      },
+      fail: {
+        scene: 'mentor把你叫到会议室。关上门。',
+        text: '"我需要跟你谈谈。"\n\n你立刻知道这不是好事。好事不需要关门。\n\n接下来的十分钟像是一场慢动作灾难。每一个字都刺进你早就存在的自我怀疑里。你不是在被反馈，你是在被证实——证实你一直以来对自己的负面评价是对的。\n\n"你还好吗？" mentor问。\n\n你笑着说"没事"，同时在心里想：我不属于这里。',
+        choices: [
+          {text:'强撑笑容说"我会改进的"，然后躲在卫生间哭',eff:{energy:-25,f:-1},meta:['bottled_up']},
+          {text:'直接问"我是不是不适合这份工作"',eff:{f:-1,c:2},meta:['vulnerable','seek_truth']},
+          {text:'当晚投了三份简历',eff:{w:2,f:-1},meta:['escape_fantasy']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'political_fork',
+    week: [6,7,8,9,10],
+    difficulty: 14, checkParam: 'p',
+    industry: ['B端','C端','体制内','外企','创业'],
+    versions: {
+      crit: {
+        scene: '两位总监的方案冲突了。你所在的组被夹在中间。',
+        text: '这不是普通的分歧。这是权力试探。选A，意味着站队A总监。选B，意味着站队B。选C——如果有C的话——意味着两边都得罪。\n\n但你看到了第四个选项。\n\n你花了两个晚上，把两个方案的数据做了交叉分析。你发现：两个方案各对一半。如果能取A的数据框架+B的执行路径，反而可能是最优解。\n\n这需要勇气。也需要技巧。',
+        choices: [
+          {text:'私下分别约两位总监，用数据说服各自让步',eff:{p:3,l:2,i:1},meta:['diplomat','bridge_builder']},
+          {text:'在联席会议上提出融合方案，把自己变成协调者',eff:{p:2,l:2,c:1},meta:['visible_leadership']},
+          {text:'把自己的分析匿名发给双方，让他们自己收敛',eff:{p:2,i:1},meta:['invisible_hand']}
+        ]
+      },
+      success: {
+        scene: '两位总监的方案冲突了。你所在的组被夹在中间。',
+        text: '这不是普通的分歧。这是权力试探。\n\n你的组长在会议上保持沉默。TA在等什么？等更大的领导表态？还是在等一个替罪羊？\n\n你意识到：在这种局势下，不站队也是一种站队。沉默也会被解读。\n\n【政治委员】说："无论你怎么选，都会有人不高兴。关键是，让谁不高兴。"',
+        choices: [
+          {text:'支持更有实权的那位，务实但功利',eff:{p:2},meta:['pragmatic']},
+          {text:'支持更受欢迎的那位，赌长期关系',eff:{p:1,c:2},meta:['relationship_gambit']},
+          {text:'以"需要更多数据"为由拖延，等局势明朗',eff:{p:1,w:1},meta:['wait_and_see']}
+        ]
+      },
+      fail: {
+        scene: '两位总监的方案冲突了。你所在的组被夹在中间。',
+        text: '你完全没注意到这件事。\n\n直到周会上，组长突然问你："你觉得A方案和B方案哪个更好？"\n\n所有人看着你。你张了张嘴，发现自己对这两个方案的了解仅限于邮件标题。\n\n你说了什么已经不重要的。重要的是，你在关键时刻暴露了信息盲区。而在职场，暴露盲区等于暴露软肋。\n\n会议结束后，没有人再问你意见。',
+        choices: [
+          {text:'下班后狂补两个方案的资料',eff:{g:2,o:2,energy:-20},meta:['damage_control']},
+          {text:'找组长道歉，承认自己准备不足',eff:{c:2,f:1},meta:['accountable']},
+          {text:'开始关注组里的信息流动，不再做局外人',eff:{p:2,g:1},meta:['wake_up_call']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'manager_departure',
+    week: [6,7,8,9,10],
+    difficulty: 14, checkParam: 'p',
+    industry: ['B端','C端','体制内','外企','创业'],
+    versions: {
+      crit: {
+        scene: '周一晨会。总监宣布：你的直属上级将于月底离职，去向"不便透露"。',
+        text: '会议室里一片安静。有人在看手机，有人在记笔记——记的不是内容，是反应。\n\n你注意到总监说"不便透露"时的语气。不是遗憾，是谨慎。这意味着离职原因不简单。\n\n你也注意到，总监的目光在会议室里扫了一圈，在你身上多停了半秒。\n\n半秒。足够多了。',
+        choices: [
+          {text:'会后单独找总监，表态愿意承担过渡期工作',eff:{l:2,p:2,o:1},meta:['step_up','visibility','leadership']},
+          {text:'私下联系离职上级，约告别咖啡+打听内情',eff:{p:2,c:1},meta:['networking','intelligence','loyalty']},
+          {text:'安抚团队情绪，组织一次非正式聚餐',eff:{c:2,l:1},meta:['team_stability','morale','leadership']}
+        ]
+      },
+      success: {
+        scene: '周一晨会。总监宣布：你的直属上级将于月底离职。',
+        text: '消息来得突然。你想起上周TA还在跟你讨论Q3的项目规划，语气里全是"以后"。\n\n"以后"——原来是个保质期很短的词。\n\n会议室里，同事们的表情各异。有人在盘算，有人在担忧，有人已经开始看手机刷招聘网站。\n\n你不知道该作何反应。跟着担忧？显得没主见。跟着盘算？显得太冷血。',
+        choices: [
+          {text:'主动接手上级的部分工作，展现稳定性',eff:{l:2,o:1},meta:['reliable','step_up','continuity']},
+          {text:'观望一周，看看新上级的风格再决定',eff:{p:1,w:1},meta:['cautious','strategic','observation']},
+          {text:'更新简历，悄悄看看外部机会',eff:{g:1,p:1},meta:['hedge','self_protection','optionality']}
+        ]
+      },
+      fail: {
+        scene: '周一晨会。总监宣布：你的直属上级将于月底离职。',
+        text: '你盯着总监的嘴唇，希望听到下一句话是"开玩笑的"。\n\n但没有下一句话。会议继续，讨论Q3规划——用"以后"这个词，只是这次没人知道"以后"是谁的以后。\n\n你想起入职时是这个上级面试的你。想起TA在你搞砸第一个项目时说的话："没关系，我第一次更糟。"\n\n现在TA走了。那句"没关系"还作数吗？',
+        choices: [
+          {text:'找同事倾诉，发现大家都在慌',eff:{c:1,w:-1},meta:['commiserate','collective_anxiety']},
+          {text:'假装没事，工作量翻倍来证明自己的价值',eff:{o:3,energy:-20},meta:['overcompensate','insecurity_driven']},
+          {text:'立即开始投简历，把这次变动当逃生信号',eff:{g:2,p:-1},meta:['flight','panic','change_averse']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'job_switch',
+    week: [8,9,10,11,12],
+    difficulty: 15, checkParam: 'g',
+    industry: ['B端','C端','体制内','外企','创业'],
+    versions: {
+      crit: {
+        scene: '猎头电话。一个你关注了很久的公司，开出了比你现在高40%的package。',
+        text: '你没有立刻答应，也没有立刻拒绝。\n\n你打开了一个空白文档，写下三栏：留下、离开、再等等。\n\n留下：熟悉的环境，信任的关系，但天花板肉眼可见。\n离开：新挑战，高薪资，但一切都未知。\n再等等：最安全，但也最昂贵——时间是最贵的成本。\n\n你想起模拟器里那些选择。原来游戏和现实的区别，只是能不能读档重来。',
+        choices: [
+          {text:'接受offer，但要求一个月交接期，善始善终',eff:{g:2,c:2,l:1},meta:['graceful_exit','integrity','professional']},
+          {text:'用offer作为筹码，和现任公司谈晋升',eff:{p:2,l:2},meta:['negotiate','leverage','assertive']},
+          {text:'拒绝，但和猎头保持联系，六个月后重新评估',eff:{g:1,p:1,w:1},meta:['strategic_patience','optionality']}
+        ]
+      },
+      success: {
+        scene: '你同时收到了两个信号：内部晋升提名，和猎头的 exploratory call。',
+        text: '这不是"选A还是选B"的问题。这是"现在的你是谁"的问题。\n\n内部晋升意味着被认可，也意味着被绑定——你知道这家公司接下来两年的天花板在哪里。\n\n猎头的电话意味着可能性，也意味着风险——你可能跳到一个更糟糕的地方。\n\n你打开模拟器，想再跑一次。但你知道，这次没有重开键。',
+        choices: [
+          {text:'争取内部晋升，同时低调接触外部机会',eff:{p:2,g:1},meta:['double_track','pragmatic']},
+          {text:'坦诚和现任上级谈职业规划，寻求建议',eff:{c:2,l:1},meta:['open_dialogue','trust','transparency']},
+          {text:'给自己两周冷静期，不做任何决定',eff:{w:2,g:-1},meta:['pause','reflection','clarity_seeking']}
+        ]
+      },
+      fail: {
+        scene: '猎头电话。你甚至不记得什么时候投递过这家公司。',
+        text: '"我们对你的背景很感兴趣。"\n\n你机械地回应，心里却在想：我现在的工作挺好的。虽然有时候无聊，但至少熟悉。虽然上级离职了，但至少知道规则。\n\n"方便发一份详细简历吗？"\n\n"好的，我周末整理一下。"\n\n你挂了电话，没有打开招聘网站，没有更新简历。周末来了又去。\n\n周一，你把猎头的名片塞进了抽屉最深处。',
+        choices: [
+          {text:'告诉自己"等忙完这阵再说"，然后无限期推迟',eff:{w:1,g:-2},meta:['procrastinate','comfort_zone']},
+          {text:'问父母/朋友意见，每个人说法不同，更乱了',eff:{c:1,p:-1},meta:['paralysis_by_advice','external_validation']},
+          {text:'逼自己更新简历投一份，投完不管结果',eff:{g:1,energy:-10},meta:['token_effort','half_commitment']}
+        ]
+      }
+    }
+  },
+  // ====== 行业专属事件 ======
+  {
+    id: 'b2b_custom_vs_standard',
+    week: [2,3,4,5,6],
+    difficulty: 12, checkParam: 'i',
+    industry: ['B端'],
+    versions: {
+      crit: {
+        scene: '大客户发来一封长邮件：他们需要深度定制，和你的标准化产品路线严重冲突。',
+        text: '你没有立刻回邮件。你花了一下午，把客户的真实需求拆解成三层：必须满足的、可以谈的、其实不重要的。\n\n然后你发现：80%的"定制需求"其实可以用现有的配置功能解决。剩下20%，你设计了一个轻量插件方案。\n\n你回复的邮件标题写的是："关于您的需求，我有一个更好的方案。"',
+        choices: [
+          {text:'把方案同时抄送产品团队，推动标准化配置升级',eff:{i:2,c:2,g:1},meta:['innovation','product_thinking']},
+          {text:'约客户视频会议，用demo展示替代方案',eff:{c:2,f:1,l:1},meta:['client_success']},
+          {text:'先做一个小范围PoC验证，用数据说话',eff:{i:2,g:1,p:1},meta:['data_driven']}
+        ]
+      },
+      success: {
+        scene: '大客户发来一封长邮件：他们需要深度定制，和你的标准化产品路线严重冲突。',
+        text: '你盯着邮件看了十分钟。客户的需求是真实的，但产品的边界也是真实的。\n\n【创新委员】说："这可能是产品进化的机会。"\n【加班委员】紧接着："但也可能是一个无底洞。"\n\n你开始在脑海中画决策树——做、不做、部分做——每个分支都有代价。',
+        choices: [
+          {text:'评估工作量，给客户一个诚实的时间表和范围',eff:{c:1,f:2},meta:['transparent']},
+          {text:'先做一个最小可行版本，看客户反馈',eff:{i:2,g:1},meta:['lean']},
+          {text:'推动内部讨论：是否值得为这个客户调整路线',eff:{p:1,l:1,c:1},meta:['strategic']}
+        ]
+      },
+      fail: {
+        scene: '大客户发来一封长邮件：他们需要深度定制，和你的标准化产品路线严重冲突。',
+        text: '你不知道该怎么办。\n\n答应客户，意味着接下来两个月都在做定制——你的产品sense告诉你这不健康。拒绝客户，意味着可能丢单——你的职业sense告诉你这很危险。\n\n你把邮件转了给你的组长，附了一句："这个我们接吗？"\n\n一小时后组长回了："你觉得呢？"\n\n你盯着这五个字，发现自己没有任何判断。',
+        choices: [
+          {text:'硬着头皮接下，加班做定制',eff:{o:3,energy:-25,i:-1},meta:['burnout_risk','people_pleaser']},
+          {text:'找产品经理聊，把决定权交出去',eff:{c:1,w:1},meta:['delegate']},
+          {text:'诚实告诉组长：我不确定，但我可以做一个评估报告',eff:{g:2,f:1},meta:['learn','honest']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'c2c_social_storm',
+    week: [3,4,5,6,7],
+    difficulty: 13, checkParam: 'p',
+    industry: ['C端'],
+    versions: {
+      crit: {
+        scene: '产品上线第三天。用户在社交媒体上炸了——不是bug，是设计理念的争议。',
+        text: '你第一时间看到了那条微博。转发已经破千。\n\n你的大脑快速分拣：真实问题？误解？恶意带节奏？每一种需要不同的应对。\n\n你没等PR介入，先拉了三个人快速复盘。15分钟后，你草拟了一份声明——不是危机公关模板，是真诚的产品解释+改进时间表。\n\n用户被诚意打动。那条声明下的最高赞评论是："早点这么说不就完了。"',
+        choices: [
+          {text:'推动团队在24小时内发布改进版本，用行动回应',eff:{l:2,i:2,c:1},meta:['crisis_leader']},
+          {text:'亲自在评论区一条条回复高质量用户，控住核心舆论',eff:{c:2,f:2},meta:['community']},
+          {text:'把用户反馈整理成结构化报告，推动产品路线调整',eff:{g:2,p:1,i:1},meta:['feedback_to_action']}
+        ]
+      },
+      success: {
+        scene: '产品上线第三天。用户在社交媒体上炸了——不是bug，是设计理念的争议。',
+        text: '你刷着微博，手心出汗。这些用户不是乱骂——他们的吐槽里有真实的使用场景。\n\n但同时，你也看到有人在断章取义。\n\n团队群已经99+了。有人在问："要不要发声明？"有人在说："先别理，热度会过去的。"\n\n【政治委员】说："这会变成信任危机，也可能变成增长机会。关键是谁先说、说什么。"',
+        choices: [
+          {text:'建议团队发一条真诚但不卑微的回应，承认问题并承诺改进',eff:{c:2,f:2},meta:['authentic_brand']},
+          {text:'默默收集所有反馈，等热度过后再做系统改进',eff:{g:2,w:1},meta:['patient']},
+          {text:'联系几个活跃的批评者，一对一了解他们的真实诉求',eff:{c:2,p:1},meta:['deep_listening']}
+        ]
+      },
+      fail: {
+        scene: '产品上线第三天。用户在社交媒体上炸了——不是bug，是设计理念的争议。',
+        text: '你看到那条热搜时，心跳漏了一拍。\n\n评论区的恶意让你手心发麻。有人截了你的产品截图，配了一句阴阳怪气的话——转发量正在以每分钟50条的速度增长。\n\n你不敢看手机，但又控制不住地刷新。每一条负面评论都像针一样扎进来。\n\n"这只是一个功能而已……"你对自己说。但你心里知道，用户骂的不是功能，是你们没想清楚。',
+        choices: [
+          {text:'在团队群里情绪化地要求立刻下线该功能',eff:{energy:-20,l:1},meta:['panic']},
+          {text:'卸载微博三天，假装什么都没发生',eff:{w:2,p:-1},meta:['avoidance']},
+          {text:'找信任的前辈聊聊，梳理到底哪里出了问题',eff:{g:2,c:1},meta:['seek_wisdom']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'gov_yj_yj',
+    week: [2,3,4,5,6],
+    difficulty: 11, checkParam: 'p',
+    industry: ['体制内'],
+    versions: {
+      crit: {
+        scene: '处长看完你的方案，只说了四个字："研究研究。"',
+        text: '你没有追问。但你也没有离开。\n\n你花了三天，旁敲侧击地了解了三件事：处长最近在操心什么上级考核指标？这个方案涉及哪些处室的利益？处里有没有其他人提过类似建议？\n\n第四天，你重新提交了方案——同样的核心建议，但框架改成了"落实XX会议精神"，附件加了一份兄弟单位的经验做法和一份风险评估。\n\n处长看完说："嗯，这个可以上会。"——你翻译过来了：通过了。',
+        choices: [
+          {text:'继续观察，把更多利益相关方纳入方案',eff:{p:3,c:1},meta:['bureaucratic_wisdom']},
+          {text:'主动帮处长写一份上会用的汇报提纲',eff:{l:2,p:1},meta:['staff_work']},
+          {text:'找处里老同事请教，确认方案有没有踩红线',eff:{p:2,g:1},meta:['safe_check']}
+        ]
+      },
+      success: {
+        scene: '处长看完你的方案，只说了四个字："研究研究。"',
+        text: '你回到工位，反复琢磨这四个字。\n\n在体制内，"研究研究"可以是一天后有结果，也可以是一年后有结果，也可以永远没有结果。它是一个黑洞，吸收了无数年轻人的热情。\n\n【政治委员】说："他不是在拒绝你。他在等你给出更多「可批」的条件。"\n\n【创新委员】反驳："也可能他真的没看懂。"',
+        choices: [
+          {text:'把方案改得更保守一些，降低审批阻力',eff:{p:2,w:1},meta:['pragmatic']},
+          {text:'找副处长先沟通，争取有人帮你说话',eff:{p:2,c:1},meta:['build_support']},
+          {text:'耐心等待，同时准备一个备选方案',eff:{g:1,w:1},meta:['patient_alternative']}
+        ]
+      },
+      fail: {
+        scene: '处长看完你的方案，只说了四个字："研究研究。"',
+        text: '你点了点头，回到工位。\n\n一个月过去了。你每次想跟进，都在走廊里看到处长匆忙的背影，然后告诉自己："下次吧。"\n\n那个方案现在还躺在你的抽屉里。你偶尔打开看一眼，像看一封没寄出的信。\n\n你开始怀疑：是你的方案不好，还是你这个人不够重要？或者两者都是？',
+        choices: [
+          {text:'终于鼓起勇气去问处长，得到一个模糊的回答',eff:{p:1,energy:-15},meta:['brave_but_late']},
+          {text:'把方案改成一份更安全的版本，重新提交',eff:{p:1,g:1},meta:['persistent']},
+          {text:'接受了"有些事急不得"，转而投入其他能看到结果的工作',eff:{w:2,g:1},meta:['acceptance']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'mnc_hq_vs_china',
+    week: [4,5,6,7,8],
+    difficulty: 14, checkParam: 'p',
+    industry: ['外企'],
+    versions: {
+      crit: {
+        scene: '总部发来了一份全球统一的定价策略。但你知道，这在中国市场完全行不通。',
+        text: '你没有直接回复说"这不行"。那是在外企最愚蠢的做法。\n\n你花了一周，做了一份数据翔实的中国市场分析：用户支付习惯、竞品定价、渠道结构、监管环境。每一条都和总部策略对标，指出差异的根源不是"我们不想执行"，而是"同样的策略在两个市场会产生相反的效果"。\n\n邮件结尾，你提出了三个替代方案，每个都标注了"符合总部战略方向，适应中国市场特点"。\n\n总部回复："Interesting. Let\'s set up a call." — 这是外企语境下的"你赢了"。',
+        choices: [
+          {text:'用数据说话，把冲突转化为本地化机会',eff:{p:2,l:2,i:1},meta:['data_diplomacy']},
+          {text:'联合亚太区其他国家的同事，形成集体声音',eff:{c:2,p:2},meta:['coalition_builder']},
+          {text:'先在中国区试行，用实际业绩证明后再推总部',eff:{l:2,i:2},meta:['guerrilla']}
+        ]
+      },
+      success: {
+        scene: '总部发来了一份全球统一的定价策略。但你知道，这在中国市场完全行不通。',
+        text: '你看着邮件里那些英文缩略词，心里发堵。\n\n"global alignment" — 翻译过来就是：你们照做就行。"best practice" — 翻译过来就是：在欧美管用的东西。"local adaptation" — 这个词不在邮件里。\n\n你的中国区同事在群里炸开了，但没有人回复那封邮件。\n\n【政治委员】说："在外企，公开反对总部策略需要包装。包装得好叫本地化洞察，包装不好叫不服从。"',
+        choices: [
+          {text:'先和直属老板对齐，争取ta帮你向上传达',eff:{p:2,l:1},meta:['chain_of_command']},
+          {text:'默默做一个中国版方案，等总部撞墙后再拿出来',eff:{i:2,w:1},meta:['wait_and_prepare']},
+          {text:'直接回复邮件，礼貌但坚定地列出中国市场特殊性',eff:{l:2,f:1},meta:['assertive']}
+        ]
+      },
+      fail: {
+        scene: '总部发来了一份全球统一的定价策略。但你知道，这在中国市场完全行不通。',
+        text: '你看着这封邮件，感到一阵熟悉的无力感。\n\n你知道这个策略在中国市场行不通。你知道这意味着接下来半年都在为一个错误决策善后。但你也知道——你只是一封邮件里的一个CC地址。\n\n"算了吧。"你想。"他们不会听的。"\n\n但你没有意识到：每沉默一次，你在中国区的决策权就少一分。总部会认为"既然没有人反对，说明没问题"。你的沉默，被解读为同意。',
+        choices: [
+          {text:'默默执行，等出问题再说',eff:{w:1,energy:-20},meta:['resigned']},
+          {text:'找中国区同事喝酒吐槽，但工作上不做任何推动',eff:{c:1,w:1},meta:['venting']},
+          {text:'意识到自己需要提升跨国沟通能力，开始学习向上管理',eff:{g:2,p:1},meta:['wake_up_growth']}
+        ]
+      }
+    }
+  },
+  {
+    id: 'startup_pivot',
+    week: [3,4,5,6,7],
+    difficulty: 15, checkParam: 'l',
+    industry: ['创业'],
+    versions: {
+      crit: {
+        scene: 'CEO在全员会议上宣布：数据出来了，我们在做的事情用户不需要。48小时内决定是否pivot。',
+        text: '会议室安静了三秒。然后炸锅了。\n\n但你没有加入混乱的讨论。你打开数据看板，开始筛选过去三个月的用户行为。你发现了一个奇怪的模式：用户确实没用你们的核心功能——但他们大量使用了一个边缘功能，一个没有人重视的副产品。\n\n"其实用户已经告诉我们答案了。"你把看板投到大屏幕上。"他们想要这个。"\n\n48小时后，团队在新方向上写出了第一行代码。',
+        choices: [
+          {text:'用数据说话，把边缘功能变成新方向的核心',eff:{l:3,i:2},meta:['data_visionary']},
+          {text:'提出做一个极低成本的方向验证，用实验结果代替直觉',eff:{i:3,g:1},meta:['lean_startup']},
+          {text:'安抚团队情绪的同时，快速给出一个可执行的方向草案',eff:{l:2,c:2},meta:['calm_leader']}
+        ]
+      },
+      success: {
+        scene: 'CEO在全员会议上宣布：数据出来了，我们在做的事情用户不需要。48小时内决定是否pivot。',
+        text: '你感觉胃部一紧。六个多月的工作——可能全部归零。\n\n会议室里有人在说数据有问题，有人在说再坚持一下，有人在偷偷看手机。\n\n【创新委员】说："pivot不是失败，拒绝pivot才是。"\n【加班委员】反驳："但我们都快累死了，现在掉头意味着更累。"\n\n你看着白板上那个"48小时"——它是一个倒计时，也是一个机会。',
+        choices: [
+          {text:'加入方向讨论，用自己的用户洞察贡献一个具体提案',eff:{l:2,i:1},meta:['step_up']},
+          {text:'先稳定团队情绪，确保讨论能理性进行',eff:{c:2,l:1},meta:['emotional_anchor']},
+          {text:'保持沉默，等方向明确后全力执行',eff:{energy:-5,w:1},meta:['follow']}
+        ]
+      },
+      fail: {
+        scene: 'CEO在全员会议上宣布：数据出来了，我们在做的事情用户不需要。48小时内决定是否pivot。',
+        text: '你的第一反应是愤怒。"早干嘛去了？"\n\n这六个月的加班、争执、妥协——难道都是笑话？你看着周围的同事，有些人表情和你一样，有些人面无表情，有些人已经在打开招聘网站了。\n\n你想起上一次和朋友的饭局上，你激情澎湃地讲你们的愿景。那个愿景现在听起来像一个笑话。\n\n48小时。你连从哪个方向开始想都不知道。',
+        choices: [
+          {text:'情绪上头，在群里发了一条冲动的消息',eff:{energy:-25,c:-2},meta:['emotional_explosion']},
+          {text:'当晚开始更新简历',eff:{w:1,f:-1},meta:['flight']},
+          {text:'冷静下来后，认真思考：这个方向如果不对，什么方向可能对？',eff:{g:2,i:1},meta:['resilience','thinker']}
+        ]
+      }
+    }
+  }
+];
+
+// 路线事件（里程碑选择）
+const ROUTE_EVENTS = {
+  after_week_3: {
+    scene: '第一个月结束了。周五晚上，办公室里只剩下你和保洁阿姨。',
+    text: '你坐在工位上，回顾这四周。\n\n你发现自己更多时间在做什么？不是"应该做什么"，而是实际上，你的注意力自然而然地流向了哪里？\n\n阿姨推着吸尘器经过，你才发现已经九点半了。',
+    choices: [
+      {text:'研究技术文档，优化手上的工具链',route:'tech',flavor:'你发现自己进入状态时，整个世界都安静了。'},
+      {text:'和同事吃饭聊天，认识其他组的人',route:'social',flavor:'你发现自己很享受交换信息的快感。'},
+      {text:'按流程完成工作，准时下班',route:'balanced',flavor:'你在找一个可持续的节奏。'}
+    ]
+  },
+  after_week_6: {
+    scene: '第二个月结束。你的mentor问你："这三个月你想留下什么？"',
+    text: '留下什么。不是"完成什么"，是"留下什么"。\n\n这是一个关于遗产的问题。关于你想被别人记住的样子。\n\n窗外的城市灯火通明。某处有人在加班，某处有人在约会，某处有人正在做出改变一生的决定。\n\n你属于哪一种？',
+    choices: [
+      {text:'一个扎实的技术方案，能跑三年的那种',route:'tech',flavor:'你想留下的是作品。'},
+      {text:'一群愿意再和你合作的人',route:'social',flavor:'你想留下的是关系。'},
+      {text:'一个更清晰的自己',route:'balanced',flavor:'你想留下的是答案。'}
+    ]
+  }
+};
+
+// 印记定义
+const IMPRINTS = {
+  first_voice: {
+    name: '「初啼」',
+    desc: '你第一次在会议上提出了不同意见。虽然声音在抖，但你说完了。',
+    effect: '表达观点类选项额外+1领导力',
+    condition: (h) => h.some(x => x.meta.includes('honest_voice') || x.meta.includes('strategic_voice'))
+  },
+  burnout_warning: {
+    name: '「红灯」',
+    desc: '你的身体在发出警告。但你还没有停下来。',
+    effect: '加班选项效果翻倍，精力消耗也翻倍',
+    condition: (h) => h.filter(x => x.meta.includes('burnout_risk') || x.meta.includes('diligent')).length >= 2
+  },
+  bridge_builder: {
+    name: '「架桥者」',
+    desc: '你在两个对立的势力之间找到了第三条路。不是妥协，是创造。',
+    effect: '政治相关检定+2',
+    condition: (h) => h.some(x => x.meta.includes('diplomat') || x.meta.includes('bridge_builder'))
+  },
+  invisible_hand: {
+    name: '「隐形的手」',
+    desc: '你影响了结果，但没有留下名字。有人知道是你，但无法证明。',
+    effect: '匿名/低调选项效果+50%',
+    condition: (h) => h.some(x => x.meta.includes('invisible_hand'))
+  },
+  authentic: {
+    name: '「本色」',
+    desc: '你说过"我不擅长这个"，也说过"但我愿意学"。两者都是真的。',
+    effect: '坦诚类选项额外获得满足感和共鸣',
+    condition: (h) => h.some(x => x.meta.includes('authentic'))
+  }
+};
+
+// ============================================================
+// LOCAL STORAGE PERSISTENCE
+// ============================================================
+const STORAGE_KEYS = {
+  runHistory: 'ws_runHistory',
+  challengeProgress: 'ws_challengeProgress',
+  lastVisit: 'ws_lastVisit',
+  userProfile: 'ws_userProfile'
+};
+
+function saveToStorage(key, data) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) { console.warn('storage save failed:', e); }
+}
+
+function loadFromStorage(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
+}
+
+function saveRunHistory(runData) {
+  const history = loadFromStorage(STORAGE_KEYS.runHistory) || [];
+  history.unshift(runData);
+  if (history.length > 5) history.length = 5;
+  saveToStorage(STORAGE_KEYS.runHistory, history);
+}
+
+function loadRunHistory() {
+  return loadFromStorage(STORAGE_KEYS.runHistory) || [];
+}
+
+function saveCurrentRun() {
+  saveRunHistory({
+    id: 'run_' + Date.now(),
+    timestamp: new Date().toISOString(),
+    targetIndustry: state.targetIndustry || null,
+    initialParams: {...state.initialParams},
+    finalParams: {...state.params},
+    route: state.route,
+    energy: state.energy,
+    satisfaction: state.satisfaction,
+    fit: state.fit,
+    imprints: [...state.imprints],
+    imprintEffects: {...state.imprintEffects},
+    committeeTrust: {...state.committeeTrust}
+  });
+  saveToStorage(STORAGE_KEYS.lastVisit, new Date().toISOString());
+}
+
+function saveUserProfile(profile) {
+  saveToStorage(STORAGE_KEYS.userProfile, profile);
+}
+
+function loadUserProfile() {
+  return loadFromStorage(STORAGE_KEYS.userProfile);
+}
+
+function saveChallengeProgress(progress) {
+  saveToStorage(STORAGE_KEYS.challengeProgress, progress);
+}
+
+function loadChallengeProgress() {
+  return loadFromStorage(STORAGE_KEYS.challengeProgress);
+}
+
+function saveLastVisit() {
+  saveToStorage(STORAGE_KEYS.lastVisit, new Date().toISOString());
+}
+
+function loadLastVisit() {
+  return loadFromStorage(STORAGE_KEYS.lastVisit);
+}
+
+function clearAllHistory() {
+  Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  week: 1,
+  params: {},
+  initialParams: {},
+  energy: 70,
+  satisfaction: 50,
+  fit: 50,
+  history: [],
+  usedEvents: [],
+  route: 'standard',
+  tags: {behavior:[],personality:{},relationship:{},milestone:[]},
+  imprints: [],
+  imprintEffects: {},
+  narrativeFragments: [],
+  committeeTrust: {},
+  targetIndustry: null
+};
+
+// ============================================================
+// INIT
+// ============================================================
+function initSliders() {
+  const container = document.getElementById('intro-sliders');
+  container.innerHTML = PARAMS.map(p => `
+    <div class="slider-item">
+      <div class="shead">
+        <span class="sname">${p.name}</span>
+        <span class="sval" id="val-${p.id}">5</span>
+      </div>
+      <div class="slabels"><span>${p.lo}</span><span>${p.hi}</span></div>
+      <input type="range" min="1" max="10" value="5" id="slider-${p.id}"
+        oninput="document.getElementById('val-${p.id}').textContent=this.value">
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// START GAME
+// ============================================================
+function startGame() {
+  PARAMS.forEach(p => {
+    const val = parseInt(document.getElementById('slider-'+p.id).value);
+    state.params[p.id] = val;
+    state.initialParams[p.id] = val;
+    state.committeeTrust[p.id] = 0;
+  });
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  updateStatus();
+  nextWeek();
+}
+
+// ============================================================
+// UPDATE STATUS BAR
+// ============================================================
+function updateStatus() {
+  document.getElementById('disp-week').textContent = state.week;
+  document.getElementById('disp-energy').textContent = state.energy;
+  document.getElementById('disp-satisfaction').textContent = state.satisfaction;
+  document.getElementById('disp-fit').textContent = state.fit;
+
+  const routeNames = {standard:'标准线',tech:'技术深耕线',social:'人脉拓展线',balanced:'稳健推进线'};
+  document.getElementById('disp-route').textContent = routeNames[state.route] || state.route;
+}
+
+// ============================================================
+// CHECK IMPRINTS
+// ============================================================
+function checkImprints() {
+  for (const [key, imp] of Object.entries(IMPRINTS)) {
+    if (state.imprints.includes(key)) continue;
+    if (imp.condition(state.history)) {
+      state.imprints.push(key);
+      showImprint(imp);
+      // 应用效果
+      if (key === 'bridge_builder') state.imprintEffects.politicalBonus = 2;
+      if (key === 'burnout_warning') state.imprintEffects.overtimeDouble = true;
+      return; // 一次只展示一个
+    }
+  }
+}
+
+function showImprint(imp) {
+  document.getElementById('imprint-title').textContent = imp.name;
+  document.getElementById('imprint-desc').textContent = imp.desc;
+  document.getElementById('imprint-effect').textContent = '效果：' + imp.effect;
+  document.getElementById('imprint-modal').classList.add('active');
+}
+
+function closeImprint() {
+  document.getElementById('imprint-modal').classList.remove('active');
+  checkImprints(); // 检查是否还有
+}
+
+// ============================================================
+// GENERATE INNER VOICES
+// ============================================================
+function generateVoices(choice, eff) {
+  const voices = [];
+  const affectedParams = Object.keys(eff).filter(k => k !== 'energy');
+
+  // 信任度语气修饰词
+  function trustTone(pid) {
+    const t = state.committeeTrust[pid] || 0;
+    if (t >= 3) return 'warm';
+    if (t <= -3) return 'cold';
+    return 'neutral';
+  }
+
+  // 信任度前缀
+  const trustPrefix = {warm:'',cold:'(冷淡地) ',neutral:''};
+
+  // 主要发声者
+  affectedParams.forEach(pid => {
+    const p = PARAMS.find(x => x.id === pid);
+    const val = state.params[pid];
+    const personality = COUNCIL_PERSONALITY[pid];
+    const tone = trustTone(pid);
+
+    let line;
+    if (eff[pid] > 0 && val >= 7) line = randomPick(tone === 'cold' ? personality.disagree : personality.high);
+    else if (eff[pid] > 0 && val <= 3) line = randomPick(personality.disagree);
+    else if (eff[pid] > 0) line = randomPick(tone === 'cold' ? [...personality.disagree] : personality.agree);
+    else if (eff[pid] < 0 && val >= 7) line = randomPick(personality.disagree);
+    else if (eff[pid] < 0) line = randomPick(tone === 'warm' ? [...personality.low, ...personality.agree] : personality.low);
+    else line = randomPick(personality.agree);
+
+    const prefix = trustPrefix[tone];
+    const speakerClass = tone === 'warm' ? 'success' : tone === 'cold' ? 'danger' :
+      (eff[pid] > 0 && val >= 6) ? 'success' : (eff[pid] < 0 && val >= 6) ? 'danger' : '';
+    voices.push({speaker:p.name, text:prefix + line, class:speakerClass});
+  });
+
+  // 随机乱入（20%）
+  if (Math.random() < 0.2) {
+    const other = PARAMS.filter(p => !affectedParams.includes(p.id));
+    const randomP = randomPick(other);
+    const personality = COUNCIL_PERSONALITY[randomP.id];
+    voices.push({
+      speaker: randomP.name,
+      text: randomPick([...personality.agree, ...personality.disagree]),
+      class: 'mind'
+    });
+  }
+
+  return voices;
+}
+
+function randomPick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+// ============================================================
+// NEXT WEEK
+// ============================================================
+function nextWeek() {
+  if (state.week > 9) {
+    endGame();
+    return;
+  }
+
+  // 路线选择节点
+  if (state.week === 4) { showRouteChoice('after_week_3'); return; }
+  if (state.week === 7) { showRouteChoice('after_week_6'); return; }
+
+  // 普通事件
+  const available = EVENT_POOL.filter(e =>
+    e.week.includes(state.week) && !state.usedEvents.includes(e.id)
+  );
+
+  if (available.length === 0) {
+    const fallback = randomPick(EVENT_POOL);
+    showEvent(fallback);
+    return;
+  }
+
+  // 行业定向逻辑：70% 行业匹配池，30% 通用池
+  let event;
+  if (state.targetIndustry) {
+    const industryMatched = available.filter(e =>
+      e.industry && e.industry.includes(state.targetIndustry)
+    );
+    const universal = available.filter(e =>
+      e.industry && e.industry.length >= 5
+    );
+    // 70% 从行业匹配池抽，但需有可用事件；否则回退通用
+    if (industryMatched.length > 0 && Math.random() < 0.7) {
+      event = randomPick(industryMatched);
+    } else if (universal.length > 0) {
+      event = randomPick(universal);
+    } else {
+      event = randomPick(available);
+    }
+  } else {
+    event = randomPick(available);
+  }
+  state.usedEvents.push(event.id);
+  showEvent(event);
+}
+
+// ============================================================
+// SHOW ROUTE CHOICE
+// ============================================================
+function showRouteChoice(key) {
+  const rc = ROUTE_EVENTS[key];
+  const container = document.getElementById('event-container');
+
+  container.innerHTML = `
+    <div class="event-area">
+      <div class="event-meta">
+        <span class="event-week">第 ${state.week} 周 · 路线抉择</span>
+        <span>${state.route}</span>
+      </div>
+      <div class="event-scene">
+        <div class="scene-setting">${rc.scene}</div>
+        <p>${rc.text.replace(/\n/g,'</p><p>')}</p>
+      </div>
+      <div class="choices">
+        ${rc.choices.map((c,i) => `
+          <button class="choice-btn" onclick="chooseRoute('${c.route}','${c.flavor.replace(/'/g,"\\'")}')">
+            ${c.text}
+            <div class="choice-flavor">${c.flavor}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function chooseRoute(route, flavor) {
+  state.route = route;
+  state.narrativeFragments.push(`第${state.week}周：${flavor}`);
+  state.week++; // 路线抉择不占完整一周，选择后进入下一周
+  updateStatus();
+  nextWeek();
+}
+
+// ============================================================
+// SHOW EVENT
+// ============================================================
+function getPhaseMultiplier() {
+  if (state.week <= 3) return 0.7;
+  if (state.week <= 6) return 1.0;
+  return 1.4;
+}
+
+function getPhaseLabel() {
+  if (state.week <= 3) return '适应期';
+  if (state.week <= 6) return '融入期';
+  return '关键期';
+}
+
+function showEvent(event) {
+  // 三阶段难度曲线
+  const phaseMult = getPhaseMultiplier();
+  const phaseLabel = getPhaseLabel();
+  const adjustedDifficulty = Math.round(event.difficulty * phaseMult);
+
+  // 检定
+  const roll = Math.floor(Math.random() * 10) + 1;
+  let score = state.params[event.checkParam] + roll;
+
+  // 印记加成
+  if (event.checkParam === 'p' && state.imprintEffects.politicalBonus) {
+    score += state.imprintEffects.politicalBonus;
+  }
+
+  let versionKey;
+  if (score >= adjustedDifficulty + 5) versionKey = 'crit';
+  else if (score >= adjustedDifficulty) versionKey = 'success';
+  else versionKey = 'fail';
+
+  const version = event.versions[versionKey];
+
+  // 构建HTML
+  const checkLabels = {crit:'大成功',success:'成功',fail:'未通过'};
+  const checkClass = versionKey;
+  const diffNote = phaseMult !== 1.0
+    ? ` (${phaseLabel}难度×${phaseMult.toFixed(1)})`
+    : '';
+
+  // 精力门控：标记高消耗选项
+  const energyWarning = state.energy < 35;
+
+  const container = document.getElementById('event-container');
+  container.innerHTML = `
+    <div class="event-area">
+      <div class="event-meta">
+        <span class="event-week">第 ${state.week} 周 · ${phaseLabel}</span>
+        <span>${state.route}</span>
+      </div>
+      <div class="check-result ${checkClass}">
+        检定：${PARAMS.find(p=>p.id===event.checkParam).name} ${state.params[event.checkParam]} + ${roll} = ${score} / 难度 ${adjustedDifficulty}${diffNote} · ${checkLabels[versionKey]}
+      </div>
+      <div class="event-scene">
+        <div class="scene-setting">${version.scene}</div>
+        <p>${version.text.replace(/\n/g,'</p><p>')}</p>
+      </div>
+      <div class="choices" id="choices-area">
+        ${version.choices.map((c,i) => {
+          const hasHighCost = c.eff && c.eff.energy && c.eff.energy <= -20;
+          const warnClass = (energyWarning && hasHighCost) ? ' style="border-color:var(--danger);"' : '';
+          const warnLabel = (energyWarning && hasHighCost)
+            ? '<div class="choice-flavor" style="color:var(--danger);">⚠️ 你的身心值很低，这个选择会消耗大量精力</div>'
+            : (c.meta && c.meta.includes('balanced') ? '<div class="choice-flavor" style="color:var(--success);">低消耗选择</div>' : '');
+          return `
+          <button class="choice-btn"${warnClass} onclick="makeChoice(${state.week},'${event.id}',${i},'${versionKey}')">
+            ${c.text}
+            ${warnLabel}
+          </button>
+        `}).join('')}
+      </div>
+    </div>
+  `;
+
+  // 保存当前事件数据用于选择回调
+  state._currentEvent = event;
+  state._currentVersion = version;
+}
+
+// ============================================================
+// MAKE CHOICE
+// ============================================================
+function makeChoice(week, eventId, choiceIndex, versionKey) {
+  const version = state._currentVersion;
+  const choice = version.choices[choiceIndex];
+
+  // 应用效果
+  let eff = {...choice.eff};
+
+  // 印记效果：burnout_warning 加班双倍
+  if (state.imprintEffects.overtimeDouble) {
+    if (eff.o) eff.o *= 2;
+    if (eff.energy) eff.energy *= 2;
+  }
+
+  // 更新参数
+  for (const [k,v] of Object.entries(eff)) {
+    if (k === 'energy') state.energy = Math.max(0, Math.min(100, state.energy + v));
+    else if (k === 'satisfaction') state.satisfaction = Math.max(0, Math.min(100, state.satisfaction + v));
+    else if (k === 'fit') state.fit = Math.max(0, Math.min(100, state.fit + v));
+    else state.params[k] = Math.max(1, Math.min(10, state.params[k] + v));
+  }
+
+  // 委员会信任度追踪：正向效果+信任，负向-信任
+  for (const [k,v] of Object.entries(eff)) {
+    if (k === 'energy' || k === 'satisfaction' || k === 'fit') continue;
+    if (state.committeeTrust[k] === undefined) state.committeeTrust[k] = 0;
+    if (v > 0) state.committeeTrust[k] += 1;
+    else if (v < 0) state.committeeTrust[k] -= 1;
+  }
+
+  // 记录历史
+  state.history.push({
+    week,
+    eventId,
+    choiceIndex,
+    version: versionKey,
+    eff,
+    meta: choice.meta || []
+  });
+
+  // 记录叙事碎片
+  state.narrativeFragments.push(`第${week}周：${choice.text}`);
+
+  // 生成内心声音
+  const voices = generateVoices(choice, eff);
+
+  // 替换选项区域为内心委员会
+  const choicesArea = document.getElementById('choices-area');
+  if (choicesArea) {
+    choicesArea.outerHTML = `
+      <div class="mind-council">
+        <div class="council-header">内心委员会</div>
+        ${voices.map(v => `
+          <div class="voice-line">
+            <span class="speaker ${v.class}">[${v.speaker}]</span> ${v.text}
+          </div>
+        `).join('')}
+        <button class="btn" onclick="proceed()" style="margin-top:16px;">继续</button>
+      </div>
+    `;
+  }
+
+  updateStatus();
+  checkImprints();
+}
+
+function proceed() {
+  state.week++;
+  nextWeek();
+}
+
+// ============================================================
+// END GAME
+// ============================================================
+function endGame() {
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-ending').classList.add('active');
+
+  // 印记
+  const imprintContainer = document.getElementById('ending-imprints');
+  if (state.imprints.length > 0) {
+    imprintContainer.innerHTML = state.imprints.map(k => {
+      const imp = IMPRINTS[k];
+      return `<div class="imprint-tag">
+        <div class="tag-name">${imp.name}</div>
+        <div class="tag-desc">${imp.desc}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // 委员会总结
+  const councilContainer = document.getElementById('ending-council');
+  const summaries = generateEndingCouncil();
+  councilContainer.innerHTML = summaries.map(s =>
+    `<div class="voice-summary">${s}</div>`
+  ).join('');
+
+  // 最终参数
+  const paramContainer = document.getElementById('ending-params');
+  paramContainer.innerHTML = PARAMS.map(p => `
+    <div class="final-param">
+      <div class="p-name">${p.name}</div>
+      <div class="p-val">${state.params[p.id]}</div>
+    </div>
+  `).join('');
+
+  // 看板 + 提升计划
+  buildDashboard();
+  buildImprovementPlan();
+
+  // 持久化
+  saveCurrentRun();
+}
+
+function generateEndingCouncil() {
+  const lines = [];
+
+  // 找出变化最大的参数（现在用 initialParams 而非 DOM 值）
+  const sorted = PARAMS.map(p => ({
+    ...p,
+    delta: state.params[p.id] - (state.initialParams[p.id] || 5)
+  })).sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta));
+
+  const top = sorted[0];
+  if (top.delta > 0) {
+    lines.push(`[${top.name}] "这三个月，你向${top.hi}的方向走了${top.delta}步。我不知道这是成长，还是惯性。"`);
+  } else if (top.delta < 0) {
+    lines.push(`[${top.name}] "你原来以为自己更接近${top.hi}，但这三个月告诉我，你其实更偏向${top.lo}。这不是坏事。"`);
+  } else {
+    lines.push(`[${top.name}] "你没有变。在三个月的混乱里保持不变，本身就是一种选择。"`);
+  }
+
+  // 声称 vs 揭示身份矛盾 — 发现感核心
+  const gaps = PARAMS.map(p => ({
+    ...p,
+    initial: state.initialParams[p.id] || 5,
+    final: state.params[p.id],
+    gap: state.params[p.id] - (state.initialParams[p.id] || 5)
+  })).filter(x => Math.abs(x.gap) >= 3).sort((a,b) => Math.abs(b.gap) - Math.abs(a.gap));
+
+  if (gaps.length > 0) {
+    const biggest = gaps[0];
+    if (biggest.gap > 0) {
+      lines.push(`[${biggest.name}] "你说你更接近${biggest.lo}，但这三个月你的每一次选择都在靠近${biggest.hi}。你的行为和你的自我认知之间，差了${biggest.gap}步。这可能是你最大的意外。"`);
+    } else {
+      lines.push(`[${biggest.name}] "你以为自己偏向${biggest.hi}，但当你真正面对选择时，你选择的却是${biggest.lo}。你的嘴巴说的是一件事，你的手做的是另一件事。两者都是你。"`);
+    }
+  } else {
+    lines.push('[你自己] "你很了解自己。这三个月，你的选择和你以为的自己是同一个人。这是一种罕见的自洽。"');
+  }
+
+  // 根据路线总结
+  const routeSummary = {
+    tech: '[成长委员] "你留下了作品。代码会记得你，即使人不记得。"',
+    social: '[协作委员] "你留下了关系。三年后的某个项目，有人会因为你今天的一杯咖啡而接你电话。"',
+    balanced: '[WLB委员] "你留下了自己。这是最难得的。"'
+  };
+  lines.push(routeSummary[state.route] || '');
+
+  // 信任度最高的委员说句话
+  const trustSorted = PARAMS.map(p => ({
+    ...p,
+    trust: state.committeeTrust[p.id] || 0
+  })).sort((a,b) => b.trust - a.trust);
+
+  const mostTrusted = trustSorted[0];
+  if (mostTrusted.trust >= 2) {
+    lines.push(`[${mostTrusted.name}] "你经常听我的。我不知道这是好事还是坏事——但你至少是认真的。谢谢你。"`);
+  }
+
+  const leastTrusted = trustSorted[trustSorted.length - 1];
+  if (leastTrusted.trust <= -2) {
+    lines.push(`[${leastTrusted.name}] "你很少听我的。也许你是对的。也许有一天你会回来找我。也许不会。"`);
+  }
+
+  // 行业定向总结
+  if (state.targetIndustry) {
+    const industryLines = {
+      'B端': '[协作委员] "你选了B端。企业服务是一个「慢信任、快交付」的领域——客户不会因为一顿饭信你，但会因为一次准时交付信你。"',
+      'C端': '[创新委员] "你选了C端。消费产品的残酷在于：用户不需要忠诚于你。他们的拇指一划，你就消失。"',
+      '体制内': '[政治委员] "你选了体制内。在这里，流程不是效率的敌人——流程就是产品本身。学会等待，也是一种能力。"',
+      '外企': '[领导委员] "你选了外企。两种文化之间的缝隙就是你的战场，也是你的舞台。桥接者永远稀缺。"',
+      '创业': '[加班委员] "你选了创业。这里没有「平衡」这个选项——只有冲刺和冲刺之间的喘气。选择这条路的人，要么很年轻，要么很勇敢。"'
+    };
+    if (industryLines[state.targetIndustry]) {
+      lines.push(industryLines[state.targetIndustry]);
+    }
+  }
+
+  // 根据印记
+  if (state.imprints.includes('first_voice')) {
+    lines.push('[领导委员] "你开口了。第一次是最难的，之后会越来越容易——或者越来越难，取决于你说了什么。"');
+  }
+  if (state.imprints.includes('burnout_warning')) {
+    lines.push('[WLB委员] "我没有阻止你。这是我的失职，也是你的选择。下次，听我的。"');
+  }
+  if (state.imprints.includes('bridge_builder')) {
+    lines.push('[政治委员] "你在两个势力之间架了桥。桥是给人走的，也是给人拆的。保护好它。"');
+  }
+
+  return lines.filter(Boolean);
+}
+
+// ============================================================
+// DEBUG
+// ============================================================
+function showDebugLog() {
+  console.log('=== 完整游戏日志 ===');
+  console.log('路线:', state.route);
+  console.log('印记:', state.imprints);
+  console.log('历史:', state.history);
+  console.log('最终参数:', state.params);
+  console.log('叙事碎片:', state.narrativeFragments);
+  alert('日志已输出到控制台 (F12)');
+}
+
+// ============================================================
+// DASHBOARD — 职场基因看板
+// ============================================================
+function buildDashboard() {
+  document.getElementById('section-dashboard').style.display = '';
+
+  // 关键指标卡片
+  const routeNames = {standard:'标准线',tech:'技术深耕线',social:'人脉拓展线',balanced:'稳健推进线'};
+  const imprintCount = state.imprints.length;
+  const choiceCount = state.history.length;
+  const avgEnergy = state.history.length > 0
+    ? Math.round(state.history.reduce((s,h) => s + (h.eff.energy || 0), 70) / (state.history.length + 1))
+    : state.energy;
+
+  document.getElementById('dash-stats').innerHTML = `
+    ${state.targetIndustry ? `<div class="dash-card mind"><div class="dash-val">${state.targetIndustry}</div><div class="dash-label">目标行业</div></div>` : ''}
+    <div class="dash-card accent">
+      <div class="dash-val">${routeNames[state.route]}</div>
+      <div class="dash-label">路线选择</div>
+    </div>
+    <div class="dash-card ${imprintCount >= 3 ? 'accent' : 'mind'}">
+      <div class="dash-val">${imprintCount}</div>
+      <div class="dash-label">印记收集</div>
+    </div>
+    <div class="dash-card ${state.fit >= 60 ? 'success' : state.fit < 30 ? 'danger' : 'accent'}">
+      <div class="dash-val">${state.fit}</div>
+      <div class="dash-label">最终共鸣度</div>
+    </div>
+    <div class="dash-card ${state.energy >= 60 ? 'success' : state.energy < 30 ? 'danger' : 'mind'}">
+      <div class="dash-val">${state.energy}</div>
+      <div class="dash-label">剩余身心值</div>
+    </div>
+  `;
+
+  // 雷达图
+  document.getElementById('radar-chart').innerHTML = drawRadarChart();
+}
+
+function drawRadarChart() {
+  const cx = 145, cy = 145, r = 115;
+  const n = PARAMS.length;
+  const angles = PARAMS.map((_, i) => (i * 45 - 90) * Math.PI / 180);
+
+  let refRings = '';
+  for (let level = 2; level <= 10; level += 2) {
+    const pts = angles.map(a => {
+      const rr = r * level / 10;
+      return `${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`;
+    }).join(' ');
+    refRings += `<polygon points="${pts}" fill="none" stroke="var(--border)" stroke-width="0.5" opacity="0.3"/>`;
+  }
+
+  const axisLines = angles.map(a => {
+    const x = (cx + r * Math.cos(a)).toFixed(1);
+    const y = (cy + r * Math.sin(a)).toFixed(1);
+    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--border)" stroke-width="0.5"/>`;
+  }).join('');
+
+  const labels = PARAMS.map((p, i) => {
+    const a = angles[i];
+    const lr = r + 26;
+    const lx = (cx + lr * Math.cos(a)).toFixed(1);
+    const ly = (cy + lr * Math.sin(a) + 3).toFixed(1);
+    const anchor = lx < cx - 15 ? 'end' : lx > cx + 15 ? 'start' : 'middle';
+    return `<text x="${lx}" y="${ly}" text-anchor="${anchor}" fill="var(--text2)" font-size="10">${p.name}</text>`;
+  }).join('');
+
+  const dataPts = angles.map((a, i) => {
+    const rr = r * state.params[PARAMS[i].id] / 10;
+    return `${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`;
+  }).join(' ');
+
+  const dataDots = angles.map((a, i) => {
+    const rr = r * state.params[PARAMS[i].id] / 10;
+    const dx = (cx + rr * Math.cos(a)).toFixed(1);
+    const dy = (cy + rr * Math.sin(a)).toFixed(1);
+    const val = state.params[PARAMS[i].id];
+    return `<circle cx="${dx}" cy="${dy}" r="${val >= 8 ? 5 : val >= 5 ? 4 : 3}" fill="var(--accent)" stroke="var(--bg)" stroke-width="1"/>`;
+  }).join('');
+
+  return `
+    <svg viewBox="0 0 290 290" style="max-width:340px;width:100%;margin:0 auto;display:block;">
+      ${refRings}
+      ${axisLines}
+      <polygon points="${dataPts}" fill="rgba(232,184,109,0.12)" stroke="var(--accent)" stroke-width="1.5"/>
+      ${dataDots}
+      ${labels}
+    </svg>`;
+}
+
+// ============================================================
+// IMPROVEMENT PLAN — 针对性提升计划
+// ============================================================
+function buildImprovementPlan() {
+  document.getElementById('section-plan').style.display = '';
+
+  const insights = getPlanInsights();
+  const plan = insights.plan;
+
+  // 提升卡片（最多3个）
+  [0, 1, 2].forEach(i => {
+    const card = document.getElementById(`plan-card-${i+1}`);
+    if (i < plan.improve.length) {
+      const item = plan.improve[i];
+      card.className = 'plan-card improve';
+      card.innerHTML = `
+        <div class="plan-header">
+          <span class="plan-title">${item.title}</span>
+          <span class="plan-tag improve-tag">ta 想对你说</span>
+        </div>
+        <div class="plan-why">${item.why}</div>
+        <ul class="plan-actions">
+          ${item.actions.map(a => `<li>${a}</li>`).join('')}
+        </ul>
+      `;
+    } else if (i === plan.improve.length && plan.leverage) {
+      card.className = 'plan-card leverage';
+      card.innerHTML = `
+        <div class="plan-header">
+          <span class="plan-title">${plan.leverage.title}</span>
+          <span class="plan-tag leverage-tag">你的声音</span>
+        </div>
+        <div class="plan-why">${plan.leverage.why}</div>
+        <ul class="plan-actions">
+          ${plan.leverage.actions.map(a => `<li>${a}</li>`).join('')}
+        </ul>
+      `;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  // 思路转变卡片
+  const card4 = document.getElementById('plan-card-4');
+  if (plan.mindset) {
+    card4.className = 'plan-card mindset';
+    card4.innerHTML = `
+      <div class="plan-header">
+        <span class="plan-title">${plan.mindset.title}</span>
+        <span class="plan-tag mindset-tag">给未来的信</span>
+      </div>
+      <div class="plan-why">${plan.mindset.why}</div>
+      <ul class="plan-actions">
+        ${plan.mindset.actions.map(a => `<li>${a}</li>`).join('')}
+      </ul>
+    `;
+  } else {
+    card4.style.display = 'none';
+  }
+
+  // 总结语
+  document.getElementById('plan-summary').innerHTML = `
+    <div class="summary-text">${insights.summary}</div>
+    <div class="summary-speaker">—— ${insights.speaker}</div>
+  `;
+}
+
+function getPlanInsights() {
+  const plan = { improve: [], leverage: null, mindset: null };
+
+  // 按参数值排序，找最低和最高
+  const sorted = PARAMS.map(p => ({
+    ...p,
+    value: state.params[p.id]
+  })).sort((a, b) => a.value - b.value);
+
+  const lowest = sorted.slice(0, 3);
+  const highest = sorted[sorted.length - 1];
+
+  // 提升建议模板
+  const improveTemplates = {
+    o: {
+      title: '加班委员 · 工作节奏管理',
+      why: '你在加班强度和自我边界之间反复拉扯。三个月的模拟中，你的加班倾向让你的身心值承受了不小的压力。如果不在早期建立节奏感，长期会走向倦怠。',
+      actions: ['设定每周最多2天加班的硬边界，提前在日历上标注"不可侵犯"的下班时间。','学会在接任务时问："这个的优先级和 deadline 是什么？"——不是所有事都紧急。','练习一句话："我今天做到这里，剩下的明天早上继续。"']
+    },
+    c: {
+      title: '协作委员 · 团队融入能力',
+      why: '你在团队协作相关的场景中倾向于独来独往。这本身不是问题——独立工作者也有独特价值。但在职场中，信息、资源和机会往往通过人际网络流动，适度连接会让你的专业能力被更多人看见。',
+      actions: ['每周主动和一位不同组的同事吃午饭，不带目的，只建立联系。','在群聊中至少每两天有一次有意义的发言——不是"收到"，是提出一个问题或分享一个观察。','找一个你信任的同事，让TA成为你的"信息盟友"——互相补全彼此看不到的信息。']
+    },
+    l: {
+      title: '领导委员 · 主动性与话语权',
+      why: '你的领导力参数偏低，意味着你在面对表达机会时倾向于退缩。不是说每个人都要做 leader——但在关键时刻不说话，你的专业判断就无法影响决策。你的沉默被解读为"没有意见"，即使你有。',
+      actions: ['在每次周会前准备好1个问题或1个观点，写在笔记本上，会议中至少说出来一次。','练习在讨论中说"我有一个不同的角度"——不是反对，是补充。','找一个低风险的机会主动承担一件事（哪怕是整理会议纪要），建立"这个人可以负责某事"的印象。']
+    },
+    p: {
+      title: '政治委员 · 组织信息敏感度',
+      why: '你在政治敏感度的场景中多次选择回避或未察觉关键信号。职场不是一个透明系统——信息不对称是常态。不是要你变成"办公室政治玩家"，而是不要让自己成为信息盲区里的人。',
+      actions: ['开始关注你所在组的决策链：谁在做什么决定？谁的意见被采纳了？为什么？','找到一个"信息枢纽"型同事（大家有事都先问TA），和TA保持良好关系。','每次参加跨部门会议后，花5分钟写下：今天谁和谁的意见不一致？这个不一致意味着什么？']
+    },
+    f: {
+      title: '反馈委员 · 与评价体系的关系',
+      why: '你在面对反馈时波动较大——要么过度吸收（把反馈变成自我否定），要么过度防御（关闭接收通道）。反馈是一面镜子，但镜子不是你自己。学会区分"这是关于我的工作的"和"这是关于我这个人"。',
+      actions: ['收到反馈时只说"谢谢，我回去想想"——给自己24小时的消化时间再做回应。','每两周主动向 mentor 或信任的同事要一次反馈，把"被反馈"变成"主动收集信息"。','把反馈记在一个单独的笔记本里，一个月后回看——你会发现大部分让你崩溃的反馈并没有真的定义你。']
+    },
+    g: {
+      title: '成长委员 · 学习与发展动力',
+      why: '你在成长相关场景中选择了"够用就行"的策略。这可能是对"内卷文化"的一种健康抵抗——不想被学习焦虑绑架。但成长不只有一种方式：不是要你996学习，而是找到你真正好奇的方向，让成长变成探索而不是任务。',
+      actions: ['每个月找一个你真正好奇的技术/话题（而不是"该学的"），花2小时做一次无压力的探索。','找一个你佩服的人（不一定是上级），问TA："你最近在学什么有意思的东西？"','建立你的"学习笔记"——不是给别人看的，是给自己的。记录那些让你眼睛一亮的时刻。']
+    },
+    i: {
+      title: '创新委员 · 打破常规的勇气',
+      why: '你在需要创新的场景中倾向于选择安全路径。这很合理——新人时期试错成本高。但"循规蹈矩"和"被看见"之间往往存在张力。适度展示你的想法，会让你的存在感超越"那个靠谱的执行者"。',
+      actions: ['每个月至少提出一个"如果这样做会不会更好"的建议——哪怕只是在组内小范围讨论。','在做重复性工作时问自己："这个流程有没有可以优化的地方？"哪怕只是节省5分钟。','留意你直觉觉得"不对劲"的地方——那往往是创新机会的入口。不一定要马上行动，但先记下来。']
+    },
+    w: {
+      title: 'WLB委员 · 工作与生活的边界',
+      why: '你在工作生活平衡上向"工作狂"一侧倾斜。这三个月你把自己燃烧得很厉害——身心值、满足感都受到了影响。长期来看，燃烧不是可持续策略。学会保护自己，不是软弱，是战略。',
+      actions: ['每天设定一个"不可商量的自我时间"——哪怕是30分钟的散步、看书、或者什么都不做。','练习说"我现在的精力不够做这件事，我们可以明天早上再讨论吗？"','每周至少有一天完全不看工作消息。你的手机有"勿扰模式"，你的大脑也需要。']
+    }
+  };
+
+  // 为最低的2个参数生成提升卡片
+  lowest.slice(0, 2).forEach(p => {
+    const template = improveTemplates[p.id];
+    if (template && p.value <= 6) {
+      plan.improve.push(template);
+    }
+  });
+
+  // 如果身心值很低，替换一个为身心关怀
+  if (state.energy < 35 && plan.improve.length < 3) {
+    plan.improve.push({
+      title: '身心委员 · 精力恢复计划',
+      why: `你的最终身心值只有 ${state.energy}。这三个月你消耗得比恢复得多。在真实的职场中，持续低能量状态会影响判断力、人际关系和长期健康。先照顾好自己，才能照顾好工作。`,
+      actions: ['本周每天睡够7小时——这是最重要的一条，其他都可以等。','在工位上设置每小时站起来2分钟的提醒，让身体从"战斗模式"中暂时脱离。','找一个和工作完全无关的爱好——不是为了提升自己，纯粹是为了快乐。']
+    });
+  }
+
+  // 如果没有足够的提升项，补充通用项
+  if (plan.improve.length < 2) {
+    const unused = sorted.filter(p => !plan.improve.some(ip => ip.title.includes(p.name)) && p.value <= 7);
+    if (unused.length > 0) {
+      const pick = unused[0];
+      const template = improveTemplates[pick.id];
+      if (template) plan.improve.push(template);
+    }
+  }
+
+  // 优势项 - 最高参数
+  const leverageTemplates = {
+    o: { title: '加班委员 · 你的拼搏精神', why: '你能在关键时刻扛住压力。这种能力在需要冲刺的阶段非常宝贵。', actions: ['在关键项目的deadline前主动承担攻坚任务——但只在关键项目。','把你的高效工作方法分享给团队，成为"如何在压力下保持产出"的参考。'] },
+    c: { title: '协作委员 · 你的连接能力', why: '你擅长建立和维护关系。在这个"关系即资本"的职场，这是一种稀缺能力。', actions: ['有意识地成为"连接者"——在认识的人和需要认识的人之间牵线。','在跨部门项目中主动承担协调角色，让更多人通过你建立连接。'] },
+    l: { title: '领导委员 · 你天生的影响力', why: '你不怕承担责任和表达观点。这种主动性能让你在关键时刻被记住。', actions: ['在重要会议上继续主动发言——你的观点正在被听见。','开始指导一位比你更新的新人，把主动性转化为领导力。'] },
+    p: { title: '政治委员 · 你的信息洞察力', why: '你对组织动态有敏锐的感知。你能看到别人看不到的信号。', actions: ['把你的洞察写成简洁的形势分析，分享给你信任的上级——成为TA的"信息参谋"。','在新项目启动时主动了解各方利益关系，提前规划协作策略。'] },
+    f: { title: '反馈委员 · 你对认可的渴望', why: '你在意别人怎么看你——这不是软弱，这是驱动你变得更好的燃料。', actions: ['把你的渴望转化为主动收集反馈的习惯——每月一次正式的feedback session。','学会区分"建设性反馈"和"噪音"——不是所有人的意见都同等重要。'] },
+    g: { title: '成长委员 · 你的学习饥渴', why: '你停不下来——这种持续的成长欲是你最大的护城河。', actions: ['把你的学习成果定期分享给团队——让成长变成可见的价值。','每年设定一个"挑战目标"——一个会让你感到不适的学习方向。'] },
+    i: { title: '创新委员 · 你的创造力', why: '你天生不满足于现状。这种不安分是创新的前提。', actions: ['把你的想法写成简短提案——哪怕只是半页纸。有文字的想法比空中的想法更有力量。','找一个支持你试错的mentor，在安全范围内验证你的创造力。'] },
+    w: { title: 'WLB委员 · 你的自我保护能力', why: '你知道什么时候该停下来。在这个鼓吹"奋斗"的时代，这是一种清醒。', actions: ['把你的边界意识分享给那些正在燃烧自己的同事——你的存在本身就是一种提醒。','在团队中倡导"可持续工作节奏"，让边界成为团队的共同准则。'] }
+  };
+
+  if (highest.value >= 7) {
+    plan.leverage = leverageTemplates[highest.id];
+  }
+
+  // 给未来的信——根据路线生成
+  const routeQuotes = {
+    tech: { title: '成长委员 · 从建造者到讲述者', why: '你选了技术深耕。你的代码会留下来。但我想提醒你：作品不会自己开口。学会讲述你建造了什么、为什么这么建——不是为了夸耀，是为了让别人理解你的思考。技术深度加上表达能力，才是不可替代。', actions: ['下次做技术分享时，多花五分钟讲你的设计思路，而不只是展示结果。','写下来——哪怕只是给自己看的笔记。"我做了什么"容易忘，"我是怎么想的"会留下来。','试着用非技术语言向一个外行解释你的工作。这会让你自己更清楚自己在做什么。'] },
+    social: { title: '协作委员 · 从连接者到创造者', why: '你选了人脉拓展。你留下了关系。但我得提醒你：关系需要支点。你需要一个属于自己的"作品"——让关系围绕着你的专业价值生长，而不只是你的人格魅力。人脉会散，作品会留。', actions: ['发起一个需要跨团队协作的小项目——做那个产出核心成果的人。','在社交中不只交换信息，也交换你的专业判断——让人们因为你的见解而记住你。','花一些独处时间问自己：去掉所有人脉，我的核心能力是什么？'] },
+    balanced: { title: 'WLB委员 · 从守城者到探险家', why: '你选了稳健推进。你保护了自己——这很了不起。但我想轻轻推你一下："自己"不是一个固定的答案，它是流动的。你的下一步不是在平衡中安稳，而是在保持平衡的同时，向某个方向迈出一小步。', actions: ['这个季度选一个方向——技术或人际——做一次"实验性深入"，看看能走多远。','每个月尝试一件你从未做过的事，不需要很大，很小就够了。','记录你的探索，不是为了评判成功或失败，而是为了观察：你在往哪个方向流？'] },
+    standard: { title: '你自己 · 从观察者到参与者', why: '你没有选择特定的路线。你在观察，在感受——这很好。但我想告诉你：在真实的职场中，"等待"也是一种选择。等太久，选择权会从你手中滑走。你不需要想清楚再行动——"想清楚"往往是我们给自己设的陷阱。', actions: ['两周内，做一件让你感到"有点不适但可能有趣"的事——发言、承担、或者说出一个观点。','观察你的能量：做什么事的时候你忘记了时间？那就是你的方向。','不需要完美的计划。下一步，走一步就够了。'] }
+  };
+
+  plan.mindset = routeQuotes[state.route] || routeQuotes.standard;
+
+  // 总结语——委员会联名信
+  const summaries = {
+    tech: { text: '你有了建造的能力。但建造只是开始。未来你会遇到很多不理解你的人——不是因为他们不聪明，而是因为他们没有看过你看到的风景。学会把你的世界翻译给别人，这是你下一步的课题，也是你的机会。', speaker: '成长委员' },
+    social: { text: '你有了连接的天赋。但连接容易，留下难。在人群中保持独特，在被记住的同时不被定义——这是你未来要练习的事。去找一个属于你自己的支点。它不需要很大，但它需要是你的。', speaker: '协作委员' },
+    balanced: { text: '你学会了保护自己。在这个鼓吹燃烧的时代，这本身就是一种清醒。但我想你知道：保护不是目的，保护是为了让你有余力去探索。在安全的基础上，选一个方向，走一步。一步就够了。', speaker: 'WLB委员' },
+    standard: { text: '三个月结束了。这个模拟器没有给你答案——它从来就不是为了给你答案。它是一面镜子。你看到的那个人，不管是熟悉还是陌生，都是你。都是你可以继续生长的起点。明天是新的一天。', speaker: '你自己' }
+  };
+
+  const summary = summaries[state.route] || summaries.standard;
+
+  return { plan, summary: summary.text, speaker: summary.speaker };
+}
+
+// ============================================================
+// PROFILE SCREEN — 个人信息补充
+// ============================================================
+function initProfileChips() {
+  document.querySelectorAll('#pf-interests .chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+    });
+  });
+}
+
+function getSelectedInterests() {
+  return Array.from(document.querySelectorAll('#pf-interests .chip.selected'))
+    .map(c => c.dataset.v);
+}
+
+function saveProfileAndEnterSpace() {
+  const profile = {
+    mbti: document.getElementById('pf-mbti').value,
+    major: document.getElementById('pf-major').value.trim(),
+    gradYear: document.getElementById('pf-grad').value.trim(),
+    interests: getSelectedInterests()
+  };
+  saveUserProfile(profile);
+  document.getElementById('screen-profile').classList.remove('active');
+  showSpace();
+}
+
+function skipProfile() {
+  document.getElementById('screen-profile').classList.remove('active');
+  showSpace();
+}
+
+function showProfileOrSpace() {
+  const profile = loadUserProfile();
+  if (profile && (profile.mbti || profile.major || profile.gradYear || (profile.interests && profile.interests.length > 0))) {
+    showSpace();
+  } else {
+    document.getElementById('screen-ending').classList.remove('active');
+    document.getElementById('screen-profile').classList.add('active');
+    initProfileChips();
+    // Pre-fill if partial profile exists
+    if (profile) {
+      if (profile.mbti) document.getElementById('pf-mbti').value = profile.mbti;
+      if (profile.major) document.getElementById('pf-major').value = profile.major;
+      if (profile.gradYear) document.getElementById('pf-grad').value = profile.gradYear;
+    }
+  }
+}
+
+// ============================================================
+// SPACE SHELL — 自洽空间导航
+// ============================================================
+function showSpace() {
+  // Hide all other screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-space').classList.add('active');
+  saveLastVisit();
+  updateSpaceGreeting();
+  initSpaceTabs();
+  buildGeneArchiveDummy();
+}
+
+function updateSpaceGreeting() {
+  const hour = new Date().getHours();
+  let greeting = hour < 5 ? '夜深了' : hour < 11 ? '早上好' : hour < 17 ? '下午好' : hour < 22 ? '晚上好' : '夜深了';
+  const lastVisit = loadLastVisit();
+  if (lastVisit) {
+    const daysAgo = Math.floor((Date.now() - new Date(lastVisit).getTime()) / 86400000);
+    if (daysAgo >= 7) greeting += '，好久不见';
+    else if (daysAgo >= 3) greeting += '，几天没来了';
+    else if (daysAgo >= 1) greeting += '，昨天过得怎么样';
+  }
+  const el = document.getElementById('space-greeting');
+  if (el) el.textContent = greeting;
+}
+
+function initSpaceTabs() {
+  document.querySelectorAll('#space-tabs .space-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('#space-tabs .space-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.space-tab-content').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      const target = document.getElementById(this.dataset.tab);
+      if (target) target.classList.add('active');
+      // Lazy-load tab content
+      if (this.dataset.tab === 'tab-radar') buildCompanyRadar();
+      if (this.dataset.tab === 'tab-gene') buildGeneArchiveDummy();
+      if (this.dataset.tab === 'tab-grow') buildGrowthWorkshop();
+      if (this.dataset.tab === 'tab-lounge') buildCommitteeLounge();
+    });
+  });
+}
+
+function selectIndustry(industry) {
+  state.targetIndustry = industry || null;
+  document.getElementById('screen-industry').classList.remove('active');
+  document.getElementById('screen-intro').classList.add('active');
+  initSliders();
+  const hasHistory = loadRunHistory().length > 0;
+  const backLink = document.getElementById('intro-back-link');
+  if (backLink) backLink.style.display = hasHistory ? '' : 'none';
+}
+
+function startNewRun() {
+  // Reset state
+  state = {
+    week: 1,
+    params: {},
+    initialParams: {},
+    energy: 70,
+    satisfaction: 50,
+    fit: 50,
+    history: [],
+    usedEvents: [],
+    route: 'standard',
+    tags: {behavior:[],personality:{},relationship:{},milestone:[]},
+    imprints: [],
+    imprintEffects: {},
+    narrativeFragments: [],
+    committeeTrust: {},
+    targetIndustry: null
+  };
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-industry').classList.add('active');
+  // Show back link only if user has history to return to
+  const hasHistory = loadRunHistory().length > 0;
+  const backLink = document.getElementById('industry-back-link');
+  if (backLink) backLink.style.display = hasHistory ? '' : 'none';
+}
+
+function enterSpaceFromEnding() {
+  document.getElementById('screen-ending').classList.remove('active');
+  showProfileOrSpace();
+}
+
+// ============================================================
+// GENE ARCHIVE — DUMMY (placeholder for Phase 2)
+// ============================================================
+function buildGeneArchiveDummy() {
+  const history = loadRunHistory();
+  const latest = history.length > 0 ? history[0] : null;
+  const blankMsg = '<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">完成第一局游戏后，这里将展示你的基因图谱</p>';
+
+  // Profile card
+  const profileEl = document.getElementById('gene-profile-card');
+  if (profileEl) {
+    const profile = loadUserProfile();
+    if (!profile || (!profile.mbti && !profile.major && !profile.gradYear)) {
+      profileEl.innerHTML = '<p style="color:var(--text3);font-size:13px;text-align:center;padding:12px;">尚未填写个人信息 — 下次结束游戏时可补充</p>';
+    } else {
+      profileEl.innerHTML = `
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
+          ${profile.mbti ? `<div style="font-size:13px;"><span style="color:var(--text3);">MBTI</span> <b style="color:var(--accent);">${profile.mbti}</b></div>` : ''}
+          ${profile.major ? `<div style="font-size:13px;"><span style="color:var(--text3);">专业</span> <b style="color:var(--accent);">${profile.major}</b></div>` : ''}
+          ${profile.gradYear ? `<div style="font-size:13px;"><span style="color:var(--text3);">毕业</span> <b style="color:var(--accent);">${profile.gradYear}</b></div>` : ''}
+          ${profile.interests && profile.interests.length > 0 ? `<div style="font-size:13px;"><span style="color:var(--text3);">兴趣</span> <b style="color:var(--accent);">${profile.interests.join(' · ')}</b></div>` : ''}
+        </div>`;
+    }
+  }
+
+  // Radar
+  const radarEl = document.getElementById('gene-radar-wrap');
+  if (radarEl) {
+    if (latest) {
+      radarEl.innerHTML = drawRadarChartWithParams(latest.finalParams);
+    } else {
+      radarEl.innerHTML = blankMsg;
+    }
+  }
+
+  // Trust grid
+  const trustEl = document.getElementById('gene-trust-grid');
+  if (trustEl) {
+    if (latest && latest.committeeTrust) {
+      trustEl.innerHTML = PARAMS.map(p => {
+        const t = latest.committeeTrust[p.id] || 0;
+        const label = t >= 2 ? '盟友' : t <= -2 ? '疏远' : '中立';
+        const absT = Math.abs(t);
+        const pct = Math.min(absT * 20, 80);
+        return `<div class="trust-cell">
+          <div class="tc-name">${p.name}</div>
+          <div class="tc-bar-bg"><div class="tc-bar-fill ${t>=0?'positive':'negative'}" style="width:${pct}%"></div></div>
+          <div class="tc-score">${t > 0 ? '+' : ''}${t}</div>
+          <div class="tc-label">${label}</div>
+        </div>`;
+      }).join('');
+    } else {
+      trustEl.innerHTML = blankMsg;
+    }
+  }
+
+  // Imprint gallery
+  const imprintEl = document.getElementById('gene-imprint-gallery');
+  if (imprintEl) {
+    const allImprints = Object.entries(IMPRINTS);
+    const collected = latest ? latest.imprints || [] : [];
+    const count = allImprints.filter(([k]) => collected.includes(k)).length;
+    imprintEl.innerHTML = `<div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:10px;">已收集 ${count}/${allImprints.length}</div>` +
+      allImprints.map(([key, imp]) => {
+        const has = collected.includes(key);
+        return `<div class="imprint-gallery-item ${has ? 'collected' : 'locked'}">
+          <div class="imprint-icon">${has ? '✦' : '🔒'}</div>
+          <div class="imprint-name">${imp.name}</div>
+          ${has ? `<div class="imprint-count">已获得</div>` : ''}
+        </div>`;
+      }).join('');
+  }
+
+  // Trend grid
+  const trendEl = document.getElementById('gene-trend-grid');
+  if (trendEl) {
+    if (history.length >= 1) {
+      trendEl.innerHTML = PARAMS.map(p => {
+        const bars = history.slice().reverse().map(r => {
+          const v = r.finalParams[p.id] || 5;
+          const indLabel = r.targetIndustry ? ` · ${r.targetIndustry}` : '';
+          return `<div class="tcn-bar" style="height:${v*3}px;" title="第${history.indexOf(r)+1}局${indLabel}: ${v}"></div>`;
+        }).join('');
+        return `<div class="trend-cell">
+          <div class="tcn-name">${p.name}</div>
+          <div class="tcn-bars">${bars}</div>
+        </div>`;
+      }).join('');
+    } else {
+      trendEl.innerHTML = blankMsg;
+    }
+  }
+}
+
+function drawRadarChartWithParams(params) {
+  const cx = 145, cy = 145, r = 115;
+  const angles = PARAMS.map((_, i) => (i * 45 - 90) * Math.PI / 180);
+
+  let refRings = '';
+  for (let level = 2; level <= 10; level += 2) {
+    const pts = angles.map(a => {
+      const rr = r * level / 10;
+      return `${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`;
+    }).join(' ');
+    refRings += `<polygon points="${pts}" fill="none" stroke="var(--border)" stroke-width="0.5" opacity="0.3"/>`;
+  }
+
+  const axisLines = angles.map(a => {
+    const x = (cx + r * Math.cos(a)).toFixed(1);
+    const y = (cy + r * Math.sin(a)).toFixed(1);
+    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--border)" stroke-width="0.5"/>`;
+  }).join('');
+
+  const labels = PARAMS.map((p, i) => {
+    const a = angles[i];
+    const lr = r + 26;
+    const lx = (cx + lr * Math.cos(a)).toFixed(1);
+    const ly = (cy + lr * Math.sin(a) + 3).toFixed(1);
+    const anchor = lx < cx - 15 ? 'end' : lx > cx + 15 ? 'start' : 'middle';
+    return `<text x="${lx}" y="${ly}" text-anchor="${anchor}" fill="var(--text2)" font-size="10">${p.name}</text>`;
+  }).join('');
+
+  const dataPts = angles.map((a, i) => {
+    const rr = r * (params[PARAMS[i].id] || 5) / 10;
+    return `${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`;
+  }).join(' ');
+
+  const dataDots = angles.map((a, i) => {
+    const rr = r * (params[PARAMS[i].id] || 5) / 10;
+    const dx = (cx + rr * Math.cos(a)).toFixed(1);
+    const dy = (cy + rr * Math.sin(a)).toFixed(1);
+    const val = params[PARAMS[i].id] || 5;
+    return `<circle cx="${dx}" cy="${dy}" r="${val >= 8 ? 5 : val >= 5 ? 4 : 3}" fill="var(--accent)" stroke="var(--bg)" stroke-width="1"/>`;
+  }).join('');
+
+  return `
+    <svg viewBox="0 0 290 290" style="max-width:340px;width:100%;margin:0 auto;display:block;">
+      ${refRings}
+      ${axisLines}
+      <polygon points="${dataPts}" fill="rgba(232,184,109,0.12)" stroke="var(--accent)" stroke-width="1.5"/>
+      ${dataDots}
+      ${labels}
+    </svg>`;
+}
+
+// ============================================================
+// COMPANY RADAR
+// ============================================================
+function computeMatches() {
+  const history = loadRunHistory();
+  const latest = history.length > 0 ? history[0] : null;
+  const params = latest ? latest.finalParams : null;
+  if (!params) return [];
+
+  const matches = COMPANIES.map(c => {
+    let dist = 0;
+    PARAMS.forEach(p => {
+      const d = params[p.id] - (c[p.id] || 5);
+      dist += d * d;
+    });
+    dist = Math.sqrt(dist);
+    let score = Math.round(Math.max(0, Math.min(100, 100 - dist * 8)));
+    // Industry bonus: same industry +5% if user has targetIndustry
+    if (state.targetIndustry && c.industry && c.industry.includes(state.targetIndustry)) {
+      score = Math.min(100, score + 5);
+    }
+    return {company:c, score, dist};
+  }).sort((a,b) => b.score - a.score);
+
+  return matches;
+}
+
+function buildCompanyRadar() {
+  const container = document.getElementById('company-radar-list');
+  if (!container) return;
+
+  const matches = computeMatches();
+  if (matches.length === 0) {
+    container.innerHTML = '<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">完成第一局游戏后，这里将显示与你的职场基因最匹配的公司</p>';
+    // Also clear detail
+    const listAll = document.getElementById('company-all-list');
+    if (listAll) listAll.innerHTML = '';
+    return;
+  }
+
+  const top3 = matches.slice(0, 3);
+
+  // Industry filter dropdown
+  const allIndustries = ['全部','B端','C端','体制内','外企','创业'];
+  const currentFilter = container.dataset.filter || '全部';
+
+  container.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      ${allIndustries.map(ind => {
+        const active = ind === currentFilter ? 'style="background:var(--accent);color:var(--bg);"' : 'style="background:var(--card2);color:var(--text2);"';
+        return `<button class="btn btn-sm" ${active} onclick="filterCompanies('${ind}')">${ind}</button>`;
+      }).join('')}
+    </div>
+    <div id="company-top3">
+      ${top3.map((m, i) => renderCompanyCard(m, i)).join('')}
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <button class="btn btn-secondary btn-sm" onclick="toggleAllCompanies()" id="btn-toggle-all">查看全部 14 家 →</button>
+    </div>
+    <div id="company-all-list" style="display:none;margin-top:12px;"></div>
+  `;
+  container.dataset.filter = currentFilter;
+}
+
+function filterCompanies(industry) {
+  const container = document.getElementById('company-radar-list');
+  if (!container) return;
+  container.dataset.filter = industry;
+  container.dataset.showAll = 'false';
+
+  const matches = computeMatches();
+  const filtered = industry === '全部' ? matches : matches.filter(m => m.company.industry && m.company.industry.includes(industry));
+  const top3 = filtered.slice(0, 3);
+
+  document.getElementById('company-top3').innerHTML = top3.map((m, i) => renderCompanyCard(m, i)).join('');
+  document.getElementById('company-all-list').style.display = 'none';
+  document.getElementById('btn-toggle-all').textContent = '查看全部 14 家 →';
+
+  // Update filter buttons
+  const buttons = container.querySelectorAll('button.btn-sm');
+  buttons.forEach(b => {
+    if (b.textContent === industry) {
+      b.style.background = 'var(--accent)'; b.style.color = 'var(--bg)';
+    } else if (['全部','B端','C端','体制内','外企','创业'].includes(b.textContent)) {
+      b.style.background = 'var(--card2)'; b.style.color = 'var(--text2)';
+    }
+  });
+}
+
+function renderCompanyCard(m, index) {
+  const rankEmoji = ['🥇','🥈','🥉'][index] || '';
+  const rankBg = ['#ffc078','#b0bec5','#d4a574'][index] || 'var(--border)';
+  const industries = (m.company.industry || []).join(' · ');
+  return `
+    <div class="company-card" style="border-left:4px solid ${rankBg};cursor:pointer;" onclick="showCompanyDetail('${m.company.name}')">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px;">${rankEmoji}</span>
+        <div style="flex:1;">
+          <div style="font-weight:600;color:var(--text);">${m.company.name}</div>
+          <div style="font-size:11px;color:var(--text3);">${m.company.desc}</div>
+          <div style="font-size:10px;color:var(--mind);margin-top:2px;">${industries}</div>
+          <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">${m.company.tags.map(t => `<span style="background:var(--card2);padding:1px 8px;border-radius:2px;font-size:10px;color:var(--text2);">${t}</span>`).join('')}</div>
+        </div>
+        <div style="font-family:var(--font-serif);font-size:24px;font-weight:700;color:${m.score>70?'var(--success)':m.score>40?'var(--accent)':'var(--danger)'};">${m.score}%</div>
+      </div>
+    </div>`;
+}
+
+function toggleAllCompanies() {
+  const listDiv = document.getElementById('company-all-list');
+  const btn = document.getElementById('btn-toggle-all');
+  const container = document.getElementById('company-radar-list');
+  if (!listDiv || !btn) return;
+
+  if (listDiv.style.display === 'none') {
+    const matches = computeMatches();
+    const industry = (container && container.dataset.filter) || '全部';
+    const filtered = industry === '全部' ? matches : matches.filter(m => m.company.industry && m.company.industry.includes(industry));
+    listDiv.innerHTML = filtered.map((m, i) => renderCompanyCard(m, i)).join('');
+    listDiv.style.display = '';
+    btn.textContent = '收起 ↑';
+  } else {
+    listDiv.style.display = 'none';
+    btn.textContent = '查看全部 14 家 →';
+  }
+}
+
+function showCompanyDetail(companyName) {
+  const company = COMPANIES.find(c => c.name === companyName);
+  if (!company) return;
+  const history = loadRunHistory();
+  const latest = history.length > 0 ? history[0] : null;
+  const params = latest ? latest.finalParams : null;
+  if (!params) return;
+
+  // Compute match
+  let dist = 0;
+  const gaps = PARAMS.map(p => {
+    const d = params[p.id] - (company[p.id] || 5);
+    dist += d * d;
+    const absD = Math.abs(d);
+    return {param:p, companyVal:company[p.id]||5, userVal:params[p.id], delta:d, absDelta:absD};
+  });
+  dist = Math.sqrt(dist);
+  const score = Math.round(Math.max(0, Math.min(100, 100 - dist * 8)));
+
+  const matchClass = score > 70 ? 'success' : score > 40 ? 'accent' : 'danger';
+
+  document.getElementById('cd-name').textContent = company.name;
+  document.getElementById('cd-match').textContent = score + '%';
+  document.getElementById('cd-match').style.color = `var(--${matchClass})`;
+  document.getElementById('cd-desc').textContent = company.desc;
+  document.getElementById('cd-tags').innerHTML = company.tags.map(t => `<span style="background:var(--card2);padding:1px 8px;border-radius:2px;font-size:10px;color:var(--text2);margin-right:4px;">${t}</span>`).join('');
+
+  document.getElementById('cd-gaps').innerHTML = gaps.map(g => {
+    const deltaClass = g.absDelta <= 1 ? 'close' : g.absDelta <= 3 ? 'medium' : 'far';
+    const deltaLabel = g.absDelta <= 1 ? '契合' : g.absDelta <= 3 ? '可适应' : '冲突';
+    const userLeft = Math.min(g.userVal, g.companyVal) * 10;
+    const companyLeft = Math.min(g.userVal, g.companyVal) * 10;
+    const userPos = g.userVal * 10;
+    const companyPos = g.companyVal * 10;
+    return `<div class="gap-row">
+      <span class="gap-label">${g.param.name}</span>
+      <div class="gap-track">
+        <div class="gap-user-mark" style="left:${userPos}%;"></div>
+        <div class="gap-company-mark" style="left:${companyPos}%;"></div>
+      </div>
+      <span class="gap-delta ${deltaClass}">${g.delta >= 0 ? '+' : ''}${g.delta} · ${deltaLabel}</span>
+    </div>`;
+  }).join('');
+
+  // If user has targetIndustry, show "start with this company" button
+  const btnWrap = document.getElementById('cd-start-btn-wrap');
+  if (btnWrap) {
+    const indMatch = company.industry ? company.industry[0] : '';
+    btnWrap.innerHTML = `<button class="btn" onclick="startGameWithCompany('${company.name}')" style="margin-top:20px;width:100%;">以 ${company.name} 参数开局 · ${indMatch}行业</button>`;
+  }
+
+  document.getElementById('company-detail-overlay').classList.add('active');
+}
+
+function hideCompanyDetail() {
+  document.getElementById('company-detail-overlay').classList.remove('active');
+}
+
+function startGameWithCompany(companyName) {
+  const company = COMPANIES.find(c => c.name === companyName);
+  if (!company) return;
+  // Reset state with company params
+  state = {
+    week: 1,
+    params: {},
+    initialParams: {},
+    energy: 70,
+    satisfaction: 50,
+    fit: 50,
+    history: [],
+    usedEvents: [],
+    route: 'standard',
+    tags: {behavior:[],personality:{},relationship:{},milestone:[]},
+    imprints: [],
+    imprintEffects: {},
+    narrativeFragments: [],
+    committeeTrust: {},
+    targetIndustry: company.industry ? company.industry[0] : null
+  };
+  PARAMS.forEach(p => {
+    state.params[p.id] = company[p.id] || 5;
+    state.initialParams[p.id] = company[p.id] || 5;
+    state.committeeTrust[p.id] = 0;
+  });
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('company-detail-overlay').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  updateStatus();
+  nextWeek();
+}
+
+// ============================================================
+// GROWTH WORKSHOP
+// ============================================================
+const CHALLENGE_POOL = [
+  // 加班(o)
+  {text:'今天17:50准时关电脑，记录下那一刻的感受',param:'o'},
+  {text:'对一件"紧急但不重要"的事说"我明天做"',param:'o'},
+  {text:'在日历上标注本周3个"不可侵犯的下班时间"',param:'o'},
+  // 协作(c)
+  {text:'主动和一位不同组的同事一起午饭',param:'c'},
+  {text:'在群聊里做一次有意义的发言（不是"收到"）',param:'c'},
+  {text:'找一个你信任的同事，分享一个你正在纠结的问题',param:'c'},
+  // 领导(l)
+  {text:'在下次周会上至少发言一次，提前准备好你要说的',param:'l'},
+  {text:'主动承担一件小事并负责到底',param:'l'},
+  {text:'练习说："我有一个不同的角度……"',param:'l'},
+  // 政治(p)
+  {text:'观察一次会议中谁的意见被采纳了，记录下来',param:'p'},
+  {text:'找到你的"信息枢纽"同事，向ta请教一个问题',param:'p'},
+  {text:'花5分钟写下今天注意到的组织动态',param:'p'},
+  // 反馈(f)
+  {text:'主动向mentor或同事要一次具体反馈',param:'f'},
+  {text:'收到反馈后只回复"谢谢，我回去想想"',param:'f'},
+  {text:'翻看过去一周的反馈，写下你从中发现的一个模式',param:'f'},
+  // 成长(g)
+  {text:'花30分钟探索一个你真正好奇的技术或话题',param:'g'},
+  {text:'找一个你佩服的人，问ta："你最近在学什么？"',param:'g'},
+  {text:'记录今天学到的3件事，无论大小',param:'g'},
+  // 创新(i)
+  {text:'对当前重复性最高的工作，写出一个可能的优化方案',param:'i'},
+  {text:'留意一个让你觉得"不对劲"的地方，把它记下来',param:'i'},
+  {text:'提出一个"如果这样做会不会更好"的建议',param:'i'},
+  // WLB(w)
+  {text:'今天给自己30分钟完全属于自己的时间',param:'w'},
+  {text:'练习说："我现在的精力不够，我们可以明天再讨论"',param:'w'},
+  {text:'今天完全不看工作消息——至少从下班到睡前',param:'w'},
+  // 综合
+  {text:'写下今天你感到最有能量的那个时刻',param:null},
+  {text:'给未来的自己写一段话：三个月后你希望自己变成什么样',param:null},
+  {text:'做一件让你感到"有点不适但可能有趣"的小事',param:null},
+  {text:'记录一个你今天帮助了别人的时刻',param:null},
+  {text:'写下三个你觉得"这就是我"的特质',param:null},
+  {text:'对镜子里的自己说一句话——任何话都可以',param:null},
+];
+
+function generateChallenges() {
+  const history = loadRunHistory();
+  const latest = history.length > 0 ? history[0] : null;
+  const profile = loadUserProfile();
+
+  // Identify weakest params from latest run
+  let weakParams = [];
+  if (latest && latest.finalParams) {
+    weakParams = PARAMS.map(p => ({id:p.id, val:latest.finalParams[p.id]||5}))
+      .sort((a,b) => a.val - b.val)
+      .slice(0, 4)
+      .map(x => x.id);
+  }
+
+  // Select challenges: 60% from weak params, 40% random
+  const weakPool = CHALLENGE_POOL.filter(c => c.param && weakParams.includes(c.param));
+  const generalPool = CHALLENGE_POOL.filter(c => !c.param || !weakParams.includes(c.param));
+
+  let selected = [];
+  const weakCount = Math.min(18, weakPool.length);
+  const shuffledWeak = weakPool.sort(() => Math.random() - 0.5).slice(0, weakCount);
+  const shuffledGeneral = generalPool.sort(() => Math.random() - 0.5).slice(0, 30 - weakCount);
+  selected = [...shuffledWeak, ...shuffledGeneral].sort(() => Math.random() - 0.5);
+
+  const challengeData = {
+    challenges: selected.map((c, i) => ({id: i, text: c.text, param: c.param, checked: false})),
+    generatedAt: new Date().toISOString(),
+    completedCount: 0
+  };
+
+  saveChallengeProgress(challengeData);
+  return challengeData;
+}
+
+function buildGrowthWorkshop() {
+  let progress = loadChallengeProgress();
+  if (!progress || !progress.challenges || progress.challenges.length === 0) {
+    progress = generateChallenges();
+  }
+
+  const completedCount = progress.challenges.filter(c => c.checked).length;
+  const pct = Math.round(completedCount / progress.challenges.length * 100);
+
+  document.getElementById('workshop-progress-fill').style.width = pct + '%';
+  document.getElementById('workshop-progress-label').textContent = completedCount + '/' + progress.challenges.length;
+
+  // Follow-up message
+  const msgEl = document.getElementById('workshop-followup-msg');
+  if (msgEl) {
+    if (completedCount === progress.challenges.length) {
+      msgEl.innerHTML = '你完成了全部30天挑战。这不只是一张清单——这是你对自己许下的30个微小的承诺。每一个勾都是一步。30步之后，你已经不是30天前的那个人了。';
+    } else if (completedCount >= 20) {
+      msgEl.innerHTML = `还有${progress.challenges.length - completedCount}天。你已经走过了大半。"完成"不是最重要的——"开始"才是。你已经在路上了。`;
+    } else if (completedCount >= 10) {
+      msgEl.innerHTML = '你已经完成三分之一了。有没有发现：当你把"改变自己"切成一天一天的小块，它就没那么吓人了？';
+    } else if (completedCount > 0) {
+      msgEl.innerHTML = '你开始了。最难的第一步已经迈出去了。剩下的29步，一步比一步轻。';
+    } else {
+      msgEl.innerHTML = '这里没有KPI。勾选你觉得有意义的，跳过你觉得不是时候的。这是你的探索，不是你的考核。';
+    }
+  }
+
+  // Challenge list
+  const listEl = document.getElementById('workshop-challenge-list');
+  if (listEl) {
+    listEl.innerHTML = progress.challenges.map(c => `
+      <div class="challenge-item ${c.checked ? 'completed' : ''}" onclick="toggleChallenge(${c.id})">
+        <input type="checkbox" ${c.checked ? 'checked' : ''} onclick="event.stopPropagation(); toggleChallenge(${c.id})">
+        <span class="challenge-text">${c.text}</span>
+      </div>
+    `).join('');
+  }
+}
+
+function toggleChallenge(id) {
+  const progress = loadChallengeProgress();
+  if (!progress) return;
+  const challenge = progress.challenges.find(c => c.id === id);
+  if (!challenge) return;
+  challenge.checked = !challenge.checked;
+  progress.completedCount = progress.challenges.filter(c => c.checked).length;
+  saveChallengeProgress(progress);
+  buildGrowthWorkshop();
+}
+
+function regenerateChallenges() {
+  generateChallenges();
+  buildGrowthWorkshop();
+}
+
+// ============================================================
+// COMMITTEE LOUNGE
+// ============================================================
+const LOUNGE_DIALOGUES = {
+  o: {
+    warm: ['你的节奏感越来越好了。不是所有仗都值得打——你知道这一点。','我最近很少出声了，因为你已经不需要我提醒了。这是好事。'],
+    neutral: ['deadline不等人。但你的身体会。','拼可以，但要知道为什么而拼。'],
+    cold: ['你一直在忽略我。我不是在要求你加班——我是在要求你认真。','你可能觉得我是个反派。但我只是那个替你说出"我想要更多"的人。']
+  },
+  c: {
+    warm: ['你开始主动连接了。我看到你在茶水间多停留了五分钟。那五分钟比你想的重要。','团队不是一群人——是一张网。你在织网，只是你自己还没意识到。'],
+    neutral: ['一个人可以走得很快，但一群人才能走得远。这不是鸡汤，这是物理。','试着和不一样的人说话。碰撞产生的东西，独自一人产不出来。'],
+    cold: ['你把自己孤立了。不是别人不接纳你——是你在推开他们。','每一个你沉默的时刻，都有人在等你的声音。']
+  },
+  l: {
+    warm: ['你开口了。声音比第一次稳多了。','领导力的本质不是你说了什么，而是你说完之后，别人做了什么。'],
+    neutral: ['会议室里还有空椅子——那把椅子不是留给别人的，是留给你的。','主动不是抢风头。主动是告诉别人：这件事我可以负责。'],
+    cold: ['你把自己藏得很好。问题是：藏得太好，就真的没人找了。','你不是没有观点。你是不敢让观点离开你的身体。']
+  },
+  p: {
+    warm: ['你开始看懂了。那个会上谁先开口、谁最后总结——这些都是语言，只是不是用嘴说的。','信息就是权力。但你要学会用它来保护自己，而不是伤害别人。'],
+    neutral: ['办公室里有一张看不见的地图。你需要学会读图。','不是要你变成"那种人"。是要你不要变成"那种什么都看不到的人"。'],
+    cold: ['你在信息盲区里。这不是批评——这是事实。','当你对周围发生的事一无所知时，你就已经出局了。']
+  },
+  f: {
+    warm: ['你开始听进去了。不防御，不崩溃——只是听。这就是成熟。','反馈是别人给你的信息。你有权利选择信或不信。但我很高兴你至少先听了。'],
+    neutral: ['不要害怕别人的评价。害怕评价的人，永远活在别人的版本里。','去问你信任的人：我做得好吗？你得到的答案可能会让你意外。'],
+    cold: ['你把耳朵关上了。我理解——有些反馈确实刺耳。但关上耳朵不会让刺消失。','你在回避。你甚至在回避我的存在。']
+  },
+  g: {
+    warm: ['你在生长。我能感觉到——你最近学的东西不是"该学的"，而是你真正好奇的。','成长不是一条直线。有时候它看起来像倒退，其实是在蓄力。'],
+    neutral: ['你现在够用的技能，三年后可能就不够用了。这不是焦虑，是事实。','找一件事——不为了升职，不为了加薪，只为了你想知道。'],
+    cold: ['你在舒适区里待太久了。舒适是温水的另一个名字。','你可能觉得我太push了。但如果连我都不push你，谁还会？']
+  },
+  i: {
+    warm: ['你最近开始问"如果"了。这是一个好问题。','打破规则之前，先理解规则——你已经做到了第一步。现在可以试试第二步了。'],
+    neutral: ['循规蹈矩很安全。安全很重要。但安全不是一切。','你上次说"我觉得可以试试另一种方法"是什么时候？'],
+    cold: ['你总是选最安全的路。你知道吗：安全的路走的人最多，所以也最挤。','你有一个想法——你只是还没说出来。']
+  },
+  w: {
+    warm: ['你开始保护自己了。这比我想的更难，也比你做的更好。','最近你下班后没有看手机，对吗？我注意到了。这是进步。'],
+    neutral: ['你的身体不是一台机器。它需要关机、需要散热、需要什么都不做。','工作不会因为你休息就崩溃。如果真的崩溃了，那说明这个系统本来就有问题。'],
+    cold: ['你在燃烧。我看得到烟，闻得到焦味。停下来。','我可能是这八个声音里最没"用"的一个。但我是唯一一个会提醒你：人会坏的。']
+  }
+};
+
+function buildCommitteeLounge() {
+  const history = loadRunHistory();
+  const latest = history.length > 0 ? history[0] : null;
+  const trust = latest ? latest.committeeTrust || {} : {};
+
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 5 ? '会议室里的灯还亮着。其他委员已经睡了，但你如果想聊聊——我还在这里。' :
+    hour < 11 ? '早晨的办公室有一种特别的安静。适合想清楚一些事情。' :
+    hour < 17 ? '下午的能量在下降。这正是适合停下来、看看周围的时候。' :
+    hour < 22 ? '晚上的城市很好看。如果你今天有什么话想说——我们听。' : '夜深了。委员会从来不睡觉。但你应该睡了。';
+
+  document.getElementById('lounge-greeting').textContent = timeGreeting;
+
+  const gridEl = document.getElementById('lounge-grid');
+  if (gridEl) {
+    gridEl.innerHTML = PARAMS.map(p => {
+      const t = trust[p.id] || 0;
+      const relation = t >= 3 ? '盟友' : t >= 1 ? '信赖' : t <= -3 ? '疏远' : t <= -1 ? '隔阂' : '中立';
+      const relationColor = t >= 3 ? 'var(--success)' : t >= 1 ? 'var(--accent)' : t <= -3 ? 'var(--danger)' : t <= -1 ? 'var(--danger)' : 'var(--text3)';
+      const icons = ['🕐','🤝','👔','⚔️','📋','📈','💡','🏠'];
+      const idx = PARAMS.indexOf(p);
+      return `<div class="lounge-member" onclick="showMemberDialogue('${p.id}')">
+        <div class="lm-avatar">${icons[idx] || '💬'}</div>
+        <div class="lm-name">${p.name}</div>
+        <div class="lm-trust">信任 ${t > 0 ? '+' : ''}${t}</div>
+        <div class="lm-relation" style="color:${relationColor};">${relation}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Hide previous dialogue
+  const dialogueEl = document.getElementById('lounge-dialogue');
+  if (dialogueEl) dialogueEl.style.display = 'none';
+}
+
+function showMemberDialogue(pid) {
+  const history = loadRunHistory();
+  const latest = history.length > 0 ? history[0] : null;
+  const trust = latest ? latest.committeeTrust || {} : {};
+  const t = trust[pid] || 0;
+  const p = PARAMS.find(x => x.id === pid);
+  const dialogues = LOUNGE_DIALOGUES[pid];
+
+  let tone, toneLabel;
+  if (t >= 3) { tone = 'warm'; toneLabel = '（语气温和）'; }
+  else if (t <= -3) { tone = 'cold'; toneLabel = '（语气冷淡）'; }
+  else { tone = 'neutral'; toneLabel = ''; }
+
+  const line = dialogues[tone][Math.floor(Math.random() * dialogues[tone].length)];
+
+  const dialogueEl = document.getElementById('lounge-dialogue');
+  if (dialogueEl) {
+    dialogueEl.style.display = '';
+    dialogueEl.innerHTML = `
+      <div class="ld-speaker">${p.name} ${toneLabel}</div>
+      <div class="ld-text">"${line}"</div>
+      <div style="margin-top:12px;font-family:var(--font-serif);font-size:12px;color:var(--text3);font-style:italic;">${p.desc}</div>
+    `;
+  }
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+(function boot() {
+  initSliders();
+  const history = loadRunHistory();
+  if (history && history.length > 0) {
+    showSpace();
+  } else {
+    document.getElementById('screen-intro').classList.add('active');
+  }
+})();
+</script>
+</body>
+</html>

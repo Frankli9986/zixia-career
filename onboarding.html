@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自洽 - 职场新人自我认知模拟器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ====== PAGE 1: 简历上传 ====== -->
+<div id="page-upload" class="page active">
+  <div class="page-header">
+    <h1 class="page-title">欢迎来到自洽</h1>
+    <p class="page-subtitle">先花 2 分钟了解自己<br>让模拟器更懂你</p>
+  </div>
+
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display:none">
+    <div class="upload-default">
+      <div class="upload-icon">📄</div>
+      <h3>拖拽上传或点击选择</h3>
+      <p>支持 PDF / Word / TXT 格式</p>
+      <div class="upload-formats">
+        <span class="format-tag">PDF</span>
+        <span class="format-tag">Word</span>
+        <span class="format-tag">TXT</span>
+      </div>
+    </div>
+    <div class="upload-progress">
+      <div class="upload-filename" id="fileName"></div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p style="margin-top:12px;font-size:13px;color:var(--text-secondary)">正在读取你的简历…</p>
+    </div>
+  </div>
+
+  <a href="#" class="skip-link" id="skipUpload">还没有简历？先跳过，直接开始 →</a>
+</div>
+
+<!-- ====== PAGE 2: 简历解析 Loading ====== -->
+<div id="page-parsing" class="page">
+  <div class="loading-container">
+    <div class="pulse-dots">
+      <div class="pulse-dot"></div>
+      <div class="pulse-dot"></div>
+      <div class="pulse-dot"></div>
+    </div>
+    <h2 class="loading-title">正在读懂你的简历…</h2>
+    <p class="loading-subtitle">通常需要 10-15 秒</p>
+
+    <div class="agent-chain">
+      <div class="agent-step" id="step1">
+        <div class="agent-icon">📥</div>
+        <div class="agent-info">
+          <div class="agent-name">摄入 Agent</div>
+          <div class="agent-desc">解析文件，提取文本内容</div>
+        </div>
+      </div>
+      <div class="agent-step" id="step2">
+        <div class="agent-icon">🔍</div>
+        <div class="agent-info">
+          <div class="agent-name">情报 Agent</div>
+          <div class="agent-desc">提炼职位、行业、技能关键词</div>
+        </div>
+      </div>
+      <div class="agent-step" id="step3">
+        <div class="agent-icon">🎯</div>
+        <div class="agent-info">
+          <div class="agent-name">画像生成 Agent</div>
+          <div class="agent-desc">映射到 8 维职场参数</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="loading-footer">你的简历仅用于生成画像，不会被保存</p>
+  </div>
+</div>
+
+<!-- ====== PAGE 3: 画像微调 ====== -->
+<div id="page-tuning" class="page">
+  <div class="back-btn" onclick="goToPage('upload')">← 返回上传</div>
+  
+  <div class="page-header">
+    <h1 class="page-title">调整你的画像</h1>
+    <p class="page-subtitle">拖动滑块，找到最像你的那一档</p>
+  </div>
+
+  <div class="param-list" id="paramList">
+    <!-- 8 个参数动态生成 -->
+  </div>
+
+  <div class="bottom-actions">
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goToPage('upload')">上一步</button>
+      <button class="btn btn-primary" onclick="confirmTuning()">继续 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== PAGE 4: 画像确认 ====== -->
+<div id="page-confirm" class="page">
+  <div class="back-btn" onclick="goToPage('tuning')">← 返回微调</div>
+  
+  <div class="page-header">
+    <h1 class="page-title">你的职场画像</h1>
+  </div>
+
+  <div class="radar-container">
+    <p class="radar-title">8 维能力雷达图</p>
+    <canvas id="radarCanvas" class="radar-chart" width="280" height="280"></canvas>
+  </div>
+
+  <div class="persona-desc" id="personaDesc">
+    <!-- 人格描述由 JS 填充 -->
+  </div>
+
+  <div class="bottom-actions">
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goToPage('tuning')">重新调整</button>
+      <button class="btn btn-primary" onclick="startExploring()">开始探索 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast 提示 -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================
+   自洽 - 简历上传 + 用户画像构建
+   数据结构和核心逻辑
+   ============================================ */
+
+// 8 维参数配置
+const PARAMS = [
+  { key: 'overwork', name: '加班强度', left: '准时下班', right: '全力投入', default: 5 },
+  { key: 'care', name: '人文关怀', left: '目标导向', right: '人情味浓', default: 5 },
+  { key: 'leadership', name: '领导风格', left: '决策集中', right: '平等对话', default: 5 },
+  { key: 'competition', name: '竞争压力', left: '合作共进', right: '优胜劣汰', default: 5 },
+  { key: 'process', name: '流程规范', left: '灵活应变', right: '制度完善', default: 5 },
+  { key: 'growth', name: '成长空间', left: '深耕细作', right: '快速晋升', default: 5 },
+  { key: 'innovation', name: '创新自由度', left: '循规蹈矩', right: '鼓励创新', default: 5 },
+  { key: 'worklife', name: '工作生活平衡', left: '工作为核', right: '生活为先', default: 5 }
+];
+
+// 参数来源（模拟 DeepSeek 返回）
+const PARAM_SOURCES = {
+  overwork: '你的简历中提到"在高压环境下完成 multi-task"，系统推断你的加班接受度偏高',
+  care: '简历中多次提及"团队协作"和"帮助同事"，表明你重视人文环境',
+  leadership: '你提到"擅长跨部门沟通协调"，偏好平等对话的工作方式',
+  competition: '简历中"业绩排名前 20%"的描述显示你对竞争有正向态度',
+  process: '你曾描述"优化工作流程"的经验，说明你对流程规范有一定需求',
+  growth: '你提到"希望寻求更大的挑战"，倾向于快速晋升路径',
+  innovation: '简历中"独立负责新项目"的经历显示你有创新意愿',
+  worklife: '你描述了"工作生活平衡"的重要性，说明这是你的核心诉求之一'
+};
+
+// 用户画像数据
+let profile = {
+  skipMode: false,
+  values: {}
+};
+
+// 初始化参数值
+PARAMS.forEach(p => {
+  profile.values[p.key] = p.default;
+});
+
+/* ====== Toast ====== */
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+/* ====== 页面导航 ====== */
+function goToPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  
+  if (pageId === 'tuning') {
+    renderParamList();
+  }
+  if (pageId === 'confirm') {
+    renderRadar();
+    renderPersonaDesc();
+  }
+}
+
+/* ====== 文件上传逻辑 ====== */
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.classList.add('drag-over');
+});
+
+uploadZone.addEventListener('dragleave', () => {
+  uploadZone.classList.remove('drag-over');
+});
+
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    handleFile(files[0]);
+  }
+});
+
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    handleFile(e.target.files[0]);
+  }
+});
+
+// 跳过上传
+document.getElementById('skipUpload').addEventListener('click', (e) => {
+  e.preventDefault();
+  profile.skipMode = true;
+  PARAMS.forEach(p => profile.values[p.key] = 5);
+  goToPage('tuning');
+});
+
+/* ====== 文件处理 ====== */
+function handleFile(file) {
+  // 格式校验
+  const allowedTypes = ['application/pdf', 'application/msword', 
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain'];
+  const allowedExts = ['.pdf', '.doc', '.docx', '.txt'];
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  
+  if (!allowedExts.includes(ext)) {
+    showToast('仅支持 PDF、Word、TXT 格式');
+    return;
+  }
+  
+  // 大小校验 5MB
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('文件有点大，请控制在 5MB 以内');
+    return;
+  }
+  
+  // 开始上传
+  uploadZone.classList.add('uploading');
+  document.getElementById('fileName').textContent = file.name;
+  
+  // 模拟上传进度
+  let progress = 0;
+  const progressFill = document.getElementById('progressFill');
+  const interval = setInterval(() => {
+    progress += Math.random() * 15;
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(interval);
+      // 完成后跳转到解析页面
+      setTimeout(() => {
+        goToPage('parsing');
+        simulateParsing();
+      }, 300);
+    }
+    progressFill.style.width = progress + '%';
+  }, 150);
+}
+
+/* ====== 模拟简历解析 ====== */
+function simulateParsing() {
+  const steps = ['step1', 'step2', 'step3'];
+  let stepIndex = 0;
+  
+  function processStep() {
+    if (stepIndex >= steps.length) {
+      // 解析完成，跳转到微调页
+      setTimeout(() => {
+        goToPage('tuning');
+      }, 500);
+      return;
+    }
+    
+    const step = document.getElementById(steps[stepIndex]);
+    step.classList.add('completed');
+    const icon = step.querySelector('.agent-icon');
+    icon.innerHTML = '✓';
+    icon.classList.add('check');
+    
+    // 生成模拟解析结果（随机化一点点）
+    const param = PARAMS[stepIndex * 2] || PARAMS[0];
+    const param2 = PARAMS[stepIndex * 2 + 1] || PARAMS[1];
+    profile.values[param.key] = Math.floor(Math.random() * 4) + 4; // 4-7
+    profile.values[param2.key] = Math.floor(Math.random() * 4) + 4;
+    
+    stepIndex++;
+    setTimeout(processStep, 1200);
+  }
+  
+  setTimeout(processStep, 600);
+}
+
+/* ====== 微调页面 ====== */
+function renderParamList() {
+  const container = document.getElementById('paramList');
+  container.innerHTML = '';
+  
+  PARAMS.forEach((param, index) => {
+    const value = profile.values[param.key];
+    const item = document.createElement('div');
+    item.className = 'param-item';
+    item.innerHTML = `
+      <div class="param-header">
+        <span class="param-name">${param.name}</span>
+        <span class="param-value" id="val-${param.key}">${value}</span>
+      </div>
+      <div class="param-slider-wrap">
+        <span>${param.left}</span>
+        <input type="range" min="0" max="10" value="${value}" 
+          id="slider-${param.key}" 
+          oninput="updateParam('${param.key}', this.value)">
+        <span>${param.right}</span>
+      </div>
+      <div class="param-source" id="source-${param.key}">
+        <div class="source-toggle" onclick="toggleSource('${param.key}')">
+          <span>👁</span> 查看来源
+        </div>
+        <div class="source-content">
+          ${profile.skipMode ? '基于你的回答，推断如下' : PARAM_SOURCES[param.key]}
+        </div>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function updateParam(key, value) {
+  profile.values[key] = parseInt(value);
+  document.getElementById('val-' + key).textContent = value;
+}
+
+function toggleSource(key) {
+  const el = document.getElementById('source-' + key);
+  el.classList.toggle('open');
+}
+
+function confirmTuning() {
+  // 检查是否全部为中立值
+  const allNeutral = PARAMS.every(p => profile.values[p.key] === 5);
+  if (allNeutral) {
+    showToast('调整一些滑块能让你获得更准的模拟结果');
+  }
+  goToPage('confirm');
+}
+
+/* ====== 确认页面 ====== */
+function renderRadar() {
+  const canvas = document.getElementById('radarCanvas');
+  const ctx = canvas.getContext('2d');
+  const cx = 140, cy = 140, radius = 100;
+  
+  // 清空画布
+  ctx.clearRect(0, 0, 280, 280);
+  
+  // 绘制背景网格
+  ctx.strokeStyle = '#E5E7EB';
+  ctx.lineWidth = 1;
+  
+  for (let level = 1; level <= 5; level++) {
+    const r = radius * level / 5;
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const angle = (Math.PI * 2 * i / 8) - Math.PI / 2;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+  
+  // 绘制轴线
+  for (let i = 0; i < 8; i++) {
+    const angle = (Math.PI * 2 * i / 8) - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
+    ctx.stroke();
+  }
+  
+  // 绘制数据区域
+  ctx.fillStyle = 'rgba(91, 138, 110, 0.3)';
+  ctx.strokeStyle = '#5B8A6E';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  
+  PARAMS.forEach((param, i) => {
+    const value = profile.values[param.key] / 10;
+    const angle = (Math.PI * 2 * i / 8) - Math.PI / 2;
+    const x = cx + radius * value * Math.cos(angle);
+    const y = cy + radius * value * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  
+  // 绘制顶点
+  ctx.fillStyle = '#5B8A6E';
+  PARAMS.forEach((param, i) => {
+    const value = profile.values[param.key] / 10;
+    const angle = (Math.PI * 2 * i / 8) - Math.PI / 2;
+    const x = cx + radius * value * Math.cos(angle);
+    const y = cy + radius * value * Math.sin(angle);
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  
+  // 绘制标签
+  ctx.fillStyle = '#6B6B6B';
+  ctx.font = '12px Noto Sans SC';
+  ctx.textAlign = 'center';
+  PARAMS.forEach((param, i) => {
+    const angle = (Math.PI * 2 * i / 8) - Math.PI / 2;
+    const x = cx + (radius + 24) * Math.cos(angle);
+    const y = cy + (radius + 24) * Math.sin(angle);
+    ctx.fillText(param.name, x, y + 4);
+  });
+}
+
+function renderPersonaDesc() {
+  const v = profile.values;
+  
+  // 简单的描述生成逻辑
+  let desc = '';
+  
+  // 加班与生活平衡
+  if (v.overwork > 7) desc += '你是一个愿意为工作全力以赴的人，工作对你来说是实现自我价值的重要途径。';
+  else if (v.overwork < 4) desc += '你是一个边界感清晰的人，下班后希望拥有属于自己的时间，工作不应侵占生活。';
+  else desc += '你对工作的投入程度适中，既愿意努力，也知道适时放松。';
+  
+  // 人文关怀
+  if (v.care > 7) desc += ' 在团队中，你更看重氛围和同事关系，这让你更有动力去协作。';
+  else if (v.care < 4) desc += ' 你更看重实际成果，不太在意团队关系的表面功夫。';
+  
+  // 领导风格
+  if (v.leadership > 7) desc += ' 你喜欢在平等的环境中讨论问题，倾向于共同决策而非单向指挥。';
+  else if (v.leadership < 4) desc += ' 你更习惯有明确的领导做主，减少决策压力。';
+  
+  // 创新
+  if (v.innovation > 7) desc += ' 创新对你来说是加分项，你愿意尝试新东西，即使可能会失败。';
+  else if (v.innovation < 4) desc += ' 你倾向于按既定规则来行事，稳定可控让你更安心。';
+  
+  document.getElementById('personaDesc').textContent = desc;
+}
+
+function startExploring() {
+  localStorage.setItem('zq-profile', JSON.stringify(profile));
+  goToPage('transition');
+  renderTransitionPage();
+}
+
+const TRAIT_CONFIG = [
+  { key: 'overwork', high: '全力投入型', low: '边界守护型' },
+  { key: 'care', high: '氛围优先型', low: '结果导向型' },
+  { key: 'leadership', high: '平等对话型', low: '指令执行型' },
+  { key: 'competition', high: '竞争驱动型', low: '合作共赢型' },
+  { key: 'process', high: '制度依赖型', low: '灵活应变型' },
+  { key: 'growth', high: '快速晋升型', low: '深耕细作型' },
+  { key: 'innovation', high: '创新冒险型', low: '循规蹈距型' },
+  { key: 'worklife', high: '生活优先型', low: '工作重心型' }
+];
+
+const COMMITTEE = [
+  { name: '加班委员', desc: '有时劝你冲，有时劝你撤' },
+  { name: '人文委员', desc: '关心你冷不冷，累不累' },
+  { name: '领导委员', desc: '在乎你有没有被听见' },
+  { name: '竞争委员', desc: '想看你赢，也怕你太累' },
+  { name: '流程委员', desc: '帮你守住底线和边界' },
+  { name: '成长委员', desc: '提醒你目光要放长远' },
+  { name: '创新委员', desc: '怂恿你试试，没人在乎' },
+  { name: 'WLB委员', desc: '只想让你好好休息' }
+];
+
+function getTopTraits(profileData) {
+  const values = profileData.values || profileData;
+  const scored = TRAIT_CONFIG.map(t => ({ ...t, value: values[t.key] || 5 }));
+  scored.sort((a, b) => b.value - a.value);
+  return scored.slice(0, 3).map(t => t.value >= 5 ? t.high : t.low);
+}
+
+function renderTransitionPage() {
+  const saved = localStorage.getItem('zq-profile');
+  let profileData = { values: {} };
+  if (saved) { try { profileData = JSON.parse(saved); } catch (e) {} }
+  const traits = getTopTraits(profileData);
+  document.getElementById('traitsContainer').innerHTML = traits.map(t => `<span class="trait-tag">${t}</span>`).join('');
+  document.getElementById('committeeGrid').innerHTML = COMMITTEE.map(c => `
+    <div class="committee-card">
+      <div class="committee-name">${c.name}</div>
+      <div class="committee-desc">${c.desc}</div>
+    </div>
+  `).join('');
+}
+
+function enterSimulator() {
+  localStorage.setItem('zq-enter-time', Date.now());
+  alert('MVP阶段，模拟器待接入');
+}
+
+/* ====== 初始化 ====== */
+document.addEventListener('DOMContentLoaded', () => {
+  // 尝试从 localStorage 恢复
+  const saved = localStorage.getItem('zq-profile');
+  if (saved) {
+    try {
+      profile = JSON.parse(saved);
+    } catch (e) {}
+  }
+});
+</script>
+
+<!-- ====== PAGE 5: 过渡页 ====== -->
+<div id="page-transition" class="page">
+  <div class="back-btn" onclick="goToPage('confirm')">← 返回调整</div>
+  
+  <div class="page-header">
+    <h1 class="page-title">你将以这样的姿态开始</h1>
+    <p class="page-subtitle">这些特点会陪伴你走过接下来的模拟旅程</p>
+  </div>
+
+  <div class="traits-section">
+    <div class="traits-container" id="traitsContainer"></div>
+  </div>
+
+  <div class="committee-section">
+    <h2 class="section-title">你的内心委员会</h2>
+    <p class="section-subtitle">模拟过程中，他们会轮番发言帮你看清自己</p>
+    <div class="committee-grid" id="committeeGrid"></div>
+  </div>
+
+  <div class="simulator-intro">
+    <p>接下来 3 周，你将在不同的职场场景中做选择。</p>
+    <p>每次选择后，你的内心委员会都会发声——帮你听见自己真正的声音。</p>
+    <p class="time-hint">⏱ 快进体验约 3-5 分钟，不需要一口气走完</p>
+  </div>
+
+  <div class="bottom-actions">
+    <button class="btn btn-primary btn-full" onclick="enterSimulator()">正式进入模拟器 →</button>
+    <div class="back-link">
+      <span onclick="goToPage('confirm')">← 返回修改</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
