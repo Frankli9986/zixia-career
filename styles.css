@@ -692,3 +692,126 @@ input[type="range"]::-webkit-slider-thumb {
 .quiz-option-btn:active {
   transform: scale(0.98);
 }
+
+/* ====== 上传容器 ====== */
+.upload-container {
+  padding: 0 24px;
+}
+
+.upload-container .upload-zone {
+  margin-bottom: 16px;
+}
+
+.upload-container .upload-progress {
+  display: block;
+}
+
+.upload-container .progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.upload-container .progress-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.upload-container .upload-file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+
+.upload-container .skip-btn {
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--text-tertiary);
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 24px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-container .skip-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+/* ====== 解析页面 ====== */
+.parsing-steps {
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.parsing-step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  transition: all 0.3s ease;
+}
+
+.parsing-step .agent-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.parsing-step.completed .agent-icon {
+  background: var(--accent);
+}
+
+.parsing-step.completed .agent-icon::after {
+  content: '✓';
+  color: white;
+  font-size: 18px;
+}
+
+.parsing-step.completed .agent-icon.check::after {
+  content: '✓';
+}
+
+.parsing-step .agent-icon.check {
+  background: var(--accent);
+}
+
+.parsing-step .agent-text {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.parsing-step.completed .agent-text {
+  color: var(--text);
+}
+
+.parsing-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}

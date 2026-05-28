@@ -5,14 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>自洽 - 职场新人自我认知模拟器</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 </head>
 <body>
 
-<!-- ====== PAGE 1: 8题问卷 ====== -->
+<!-- ====== PAGE: 简历上传 ====== -->
 <div id="page-upload" class="page active">
   <div class="page-header">
     <h1 class="page-title">欢迎来到自洽</h1>
-    <p class="page-subtitle">花 2 分钟回答 8 道题<br>让模拟器更懂你</p>
+    <p class="page-subtitle">上传简历，AI 智能解析你的职场偏好<br>或跳过，直接回答 8 道题</p>
+  </div>
+
+  <div class="upload-container" id="uploadContainer">
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon">📄</div>
+      <div class="upload-text">点击上传 或 拖拽文件到这里</div>
+      <div class="upload-hint">支持 PDF、Word、TXT（≤5MB）</div>
+      <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display:none">
+    </div>
+    <div class="upload-progress" id="uploadProgress" style="display:none">
+      <div class="upload-file-name" id="fileName"></div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-full skip-btn" id="skipUpload">跳过上传，直接回答 8 题 →</button>
+  </div>
+</div>
+
+<!-- ====== PAGE: 简历解析中 ====== -->
+<div id="page-parsing" class="page">
+  <div class="page-header">
+    <h1 class="page-title">正在解析你的简历</h1>
+    <p class="page-subtitle">AI 正在阅读并分析你的职场偏好</p>
+  </div>
+  <div class="parsing-steps">
+    <div class="parsing-step" id="step1">
+      <div class="agent-icon">🤖</div>
+      <div class="agent-text">读取简历文本...</div>
+    </div>
+    <div class="parsing-step" id="step2">
+      <div class="agent-icon">🔍</div>
+      <div class="agent-text">分析职场偏好维度...</div>
+    </div>
+    <div class="parsing-step" id="step3">
+      <div class="agent-icon">✨</div>
+      <div class="agent-text">生成画像参数...</div>
+    </div>
+  </div>
+  <div class="parsing-fallback" id="parsingFallback" style="display:none">
+    <p>解析遇到问题，正在切换到问卷模式...</p>
+  </div>
+</div>
+
+<!-- ====== PAGE: 8题问卷 ====== -->
+<div id="page-quiz" class="page">
+  <div class="back-btn" onclick="goToPage('upload')">← 返回上传</div>
+  <div class="page-header">
+    <h1 class="page-title">回答 8 道题</h1>
+    <p class="page-subtitle">让模拟器更懂你</p>
   </div>
 
   <div class="quiz-progress" id="quizProgress">
@@ -250,7 +302,7 @@ function goToPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + pageId).classList.add('active');
   
-  if (pageId === 'upload') {
+  if (pageId === 'quiz') {
     initQuiz();
   }
   if (pageId === 'tuning') {
@@ -301,11 +353,8 @@ document.getElementById('skipUpload').addEventListener('click', (e) => {
 });
 
 /* ====== 文件处理 ====== */
-function handleFile(file) {
+async function handleFile(file) {
   // 格式校验
-  const allowedTypes = ['application/pdf', 'application/msword', 
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain'];
   const allowedExts = ['.pdf', '.doc', '.docx', '.txt'];
   const ext = '.' + file.name.split('.').pop().toLowerCase();
   
@@ -320,59 +369,193 @@ function handleFile(file) {
     return;
   }
   
-  // 开始上传
+  // 开始上传（模拟进度）
   uploadZone.classList.add('uploading');
+  document.getElementById('uploadProgress').style.display = 'block';
   document.getElementById('fileName').textContent = file.name;
   
-  // 模拟上传进度
   let progress = 0;
   const progressFill = document.getElementById('progressFill');
   const interval = setInterval(() => {
-    progress += Math.random() * 15;
-    if (progress >= 100) {
-      progress = 100;
+    progress += Math.random() * 20;
+    if (progress >= 85) {
+      progress = 85;
       clearInterval(interval);
-      // 完成后跳转到解析页面
-      setTimeout(() => {
-        goToPage('parsing');
-        simulateParsing();
-      }, 300);
     }
     progressFill.style.width = progress + '%';
-  }, 150);
+  }, 100);
+  
+  try {
+    goToPage('parsing');
+    await realParsing(file);
+  } catch (err) {
+    clearInterval(interval);
+    uploadZone.classList.remove('uploading');
+    document.getElementById('uploadProgress').style.display = 'none';
+  }
 }
 
-/* ====== 模拟简历解析 ====== */
-function simulateParsing() {
+/* ============================================
+   简历文件读取函数（支持 PDF/DOCX/TXT）
+   ============================================ */
+async function readFileContent(file) {
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  
+  if (ext === '.txt') {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
+  
+  if (ext === '.pdf') {
+    const pdfjsLib = window.pdfjsLib;
+    if (!pdfjsLib) throw new Error('PDF.js 未加载');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(item => item.str).join(' ') + '\n';
+    }
+    return text;
+  }
+  
+  if (ext === '.doc' || ext === '.docx') {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  }
+  
+  throw new Error('不支持的文件格式');
+}
+
+/* ============================================
+   DeepSeek API 调用函数
+   ============================================ */
+async function callDeepSeekAPI(resumeText) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  
+  try {
+    const res = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer sk-34dP43LGhS3nyiKfKT4S1y7Jgb7e8vN2mRx4UwXp2Zq6Hc9LkFsTmYo8A9d'
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{
+          role: 'user',
+          content: `你是一个简历分析师。请从以下简历内容中提取求职者的职场偏好，输出JSON格式的8维参数（每项1-10的整数）：
+
+JSON格式：
+{
+  "overwork": 数字,      // 加班接受度，1=准时下班，10=全力投入
+  "care": 数字,          // 人文关怀，1=目标导向，10=人情味浓
+  "leadership": 数字,    // 领导风格，1=决策集中，10=平等对话
+  "competition": 数字,   // 竞争压力，1=合作共进，10=优胜劣汰
+  "process": 数字,        // 流程规范，1=灵活应变，10=制度完善
+  "growth": 数字,         // 成长空间，1=深耕细作，10=快速晋升
+  "innovation": 数字,    // 创新自由度，1=循规蹈矩，10=鼓励创新
+  "worklife": 数字        // 工作生活平衡，1=工作为核，10=生活优先
+}
+
+只输出JSON，不要其他内容。
+简历内容：
+${resumeText.substring(0, 3000)}`
+        }]
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
+    if (!res.ok) throw new Error('API 请求失败: ' + res.status);
+    
+    const data = await res.json();
+    const content = data.choices[0].message.content;
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    throw new Error('无法解析 DeepSeek 返回内容');
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
+}
+
+/* ============================================
+   真实简历解析流程（替代 simulateParsing）
+   ============================================ */
+async function realParsing(file) {
   const steps = ['step1', 'step2', 'step3'];
+  
+  // 重置步骤状态
+  steps.forEach(s => {
+    const el = document.getElementById(s);
+    el.classList.remove('completed');
+    const icon = el.querySelector('.agent-icon');
+    icon.innerHTML = { step1: '🤖', step2: '🔍', step3: '✨' }[s];
+    icon.classList.remove('check');
+  });
+  
   let stepIndex = 0;
   
-  function processStep() {
-    if (stepIndex >= steps.length) {
-      // 解析完成，跳转到微调页
-      setTimeout(() => {
-        goToPage('tuning');
-      }, 500);
-      return;
-    }
-    
-    const step = document.getElementById(steps[stepIndex]);
+  function markStepDone(stepId) {
+    const step = document.getElementById(stepId);
     step.classList.add('completed');
     const icon = step.querySelector('.agent-icon');
     icon.innerHTML = '✓';
     icon.classList.add('check');
-    
-    // 生成模拟解析结果（随机化一点点）
-    const param = PARAMS[stepIndex * 2] || PARAMS[0];
-    const param2 = PARAMS[stepIndex * 2 + 1] || PARAMS[1];
-    profile.values[param.key] = Math.floor(Math.random() * 4) + 4; // 4-7
-    profile.values[param2.key] = Math.floor(Math.random() * 4) + 4;
-    
-    stepIndex++;
-    setTimeout(processStep, 1200);
   }
   
-  setTimeout(processStep, 600);
+  try {
+    // Step 1: 读取文件
+    await new Promise(r => setTimeout(r, 600));
+    markStepDone('step1');
+    
+    const resumeText = await readFileContent(file);
+    if (!resumeText || resumeText.trim().length < 20) {
+      throw new Error('文件内容读取失败或内容过少');
+    }
+    
+    // Step 2: 调用 API
+    await new Promise(r => setTimeout(r, 1200));
+    markStepDone('step2');
+    
+    const result = await callDeepSeekAPI(resumeText);
+    
+    // 验证返回值
+    const requiredKeys = ['overwork', 'care', 'leadership', 'competition', 'process', 'growth', 'innovation', 'worklife'];
+    for (const key of requiredKeys) {
+      if (typeof result[key] !== 'number' || result[key] < 1 || result[key] > 10) {
+        throw new Error('API 返回参数不合法: ' + key);
+      }
+    }
+    
+    // Step 3: 应用结果
+    await new Promise(r => setTimeout(r, 800));
+    markStepDone('step3');
+    
+    profile.values = result;
+    profile.skipMode = false;
+    
+    await new Promise(r => setTimeout(r, 500));
+    goToPage('tuning');
+    
+  } catch (err) {
+    console.warn('简历解析失败，回退到问卷模式:', err.message);
+    document.getElementById('parsingFallback').style.display = 'flex';
+    await new Promise(r => setTimeout(r, 1500));
+    goToPage('quiz');
+    initQuiz();
+  }
 }
 
 /* ====== 微调页面 ====== */
@@ -597,8 +780,9 @@ document.addEventListener('DOMContentLoaded', () => {
       profile = JSON.parse(saved);
     } catch (e) {}
   }
-  // 启动问卷
-  initQuiz();
+  // 默认显示上传页，不自动启动问卷
+  // 首次加载显示上传页面
+  goToPage('upload');
 });
 </script>
 
