@@ -1645,6 +1645,12 @@ function saveCurrentRun() {
   saveToStorage(STORAGE_KEYS.lastVisit, new Date().toISOString());
 }
 
+const KEY_MAP = {
+  'overwork': 'o', 'care': 'c', 'leadership': 'l',
+  'competition': 'p', 'process': 'f', 'growth': 'g',
+  'innovation': 'i', 'worklife': 'w'
+};
+
 function saveUserProfile(profile) {
   saveToStorage(STORAGE_KEYS.userProfile, profile);
 }
@@ -1700,17 +1706,38 @@ let state = {
 // ============================================================
 function initSliders() {
   const container = document.getElementById('intro-sliders');
-  container.innerHTML = PARAMS.map(p => `
-    <div class="slider-item">
-      <div class="shead">
-        <span class="sname">${p.name}</span>
-        <span class="sval" id="val-${p.id}">5</span>
+
+  // 尝试读取 onboarding 的 profile（统一 key: ws_userProfile）
+  const savedProfile = loadFromStorage('ws_userProfile');
+  const hasProfile = savedProfile && savedProfile.values;
+
+  container.innerHTML = PARAMS.map(p => {
+    let defaultVal = 5;
+    if (hasProfile) {
+      // 优先尝试用 simulator id 直接匹配
+      if (savedProfile.values[p.id] !== undefined) {
+        defaultVal = savedProfile.values[p.id];
+      }
+      // 尝试用 KEY_MAP 映射 onboarding key → simulator id
+      else {
+        const onboardingKey = Object.keys(KEY_MAP).find(k => KEY_MAP[k] === p.id);
+        if (onboardingKey && savedProfile.values[onboardingKey] !== undefined) {
+          defaultVal = savedProfile.values[onboardingKey];
+        }
+      }
+    }
+    return `
+      <div class="slider-item">
+        <div class="shead">
+          <span class="sname">${p.name}</span>
+          <span class="sval" id="val-${p.id}">${defaultVal}</span>
+        </div>
+        <div class="slabels"><span>${p.lo}</span><span>${p.hi}</span></div>
+        <input type="range" min="1" max="10" value="${defaultVal}" id="slider-${p.id}"
+          oninput="document.getElementById('val-${p.id}').textContent=this.value">
       </div>
-      <div class="slabels"><span>${p.lo}</span><span>${p.hi}</span></div>
-      <input type="range" min="1" max="10" value="5" id="slider-${p.id}"
-        oninput="document.getElementById('val-${p.id}').textContent=this.value">
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // ============================================================

@@ -37,6 +37,9 @@
   </div>
 
   <a href="#" class="skip-link" id="skipUpload">还没有简历？先跳过，直接开始 →</a>
+  <div style="text-align:center;margin-top:16px;">
+    <button class="btn btn-secondary" onclick="goToPage('quiz')" style="width:auto;padding:10px 24px;font-size:14px;">📝 快速问卷（2分钟）</button>
+  </div>
 </div>
 
 <!-- ====== PAGE 2: 简历解析 Loading ====== -->
@@ -75,6 +78,27 @@
     </div>
 
     <p class="loading-footer">你的简历仅用于生成画像，不会被保存</p>
+  </div>
+</div>
+
+<!-- ====== PAGE 2.5: 快速问卷 ====== -->
+<div id="page-quiz" class="page">
+  <div class="page-header">
+    <h1 class="page-title">回答 8 道题</h1>
+    <p class="page-subtitle">让模拟器更懂你</p>
+  </div>
+  <div class="quiz-progress" style="max-width:400px;margin:0 auto 24px;">
+    <div class="progress-bar" style="height:6px;">
+      <div class="progress-fill" id="quizProgressFill" style="width:12.5%;transition:width 0.3s;"></div>
+    </div>
+    <div class="quiz-progress-text" id="quizProgressText" style="text-align:center;font-size:13px;color:var(--text-secondary);margin-top:8px;">第 1 / 8 题</div>
+  </div>
+  <div class="quiz-question" id="quizQuestion" style="max-width:400px;margin:0 auto;">
+    <div class="quiz-q-text" id="quizQText" style="font-size:16px;font-weight:500;margin-bottom:20px;text-align:center;"></div>
+    <div class="quiz-options" id="quizOptions" style="display:flex;flex-direction:column;gap:12px;"></div>
+  </div>
+  <div style="text-align:center;margin-top:24px;">
+    <a href="#" class="skip-link" onclick="goToPage('upload');return false;">← 返回上传</a>
   </div>
 </div>
 
@@ -187,6 +211,10 @@ function goToPage(pageId) {
   if (pageId === 'confirm') {
     renderRadar();
     renderPersonaDesc();
+  }
+  if (pageId === 'quiz') {
+    quizStep = 0;
+    renderQuiz();
   }
 }
 
@@ -301,6 +329,116 @@ function simulateParsing() {
   }
   
   setTimeout(processStep, 600);
+}
+
+/* ====== 快速问卷 ====== */
+const QUIZ = [
+  {
+    key: 'overwork',
+    q: '你更能接受哪种工作节奏？',
+    opts: [
+      { text: '准时下班，下班后不处理工作', val: 2 },
+      { text: '偶尔加班，但不影响生活', val: 5 },
+      { text: '愿意为事业全力以赴', val: 9 }
+    ]
+  },
+  {
+    key: 'care',
+    q: '在团队合作中，你更看重什么？',
+    opts: [
+      { text: '目标和结果最重要', val: 2 },
+      { text: '既看结果也看氛围', val: 5 },
+      { text: '团队氛围和人际关系', val: 9 }
+    ]
+  },
+  {
+    key: 'leadership',
+    q: '你更倾向于哪种管理方式？',
+    opts: [
+      { text: '有明确指令，我执行就好', val: 2 },
+      { text: '共同讨论，一起做决定', val: 7 },
+      { text: '主动扛事，带动他人', val: 9 }
+    ]
+  },
+  {
+    key: 'competition',
+    q: '面对职场竞争，你的态度是？',
+    opts: [
+      { text: '合作共赢比竞争更重要', val: 2 },
+      { text: '做好自己，顺其自然', val: 5 },
+      { text: '适者生存，愿意接受挑战', val: 9 }
+    ]
+  },
+  {
+    key: 'process',
+    q: '你更喜欢什么样的工作流程？',
+    opts: [
+      { text: '灵活应变，不需要太多规则', val: 2 },
+      { text: '有基本规范，但可以打破', val: 5 },
+      { text: '流程清晰，制度完善更安心', val: 9 }
+    ]
+  },
+  {
+    key: 'growth',
+    q: '你对职业发展的期待是？',
+    opts: [
+      { text: '深耕一个领域，成为专家', val: 2 },
+      { text: '稳步晋升，不着急', val: 5 },
+      { text: '快速成长，承担更大责任', val: 9 }
+    ]
+  },
+  {
+    key: 'innovation',
+    q: '面对新项目或创新尝试，你的态度？',
+    opts: [
+      { text: '按既定方式执行就好', val: 2 },
+      { text: '愿意尝试，但要看情况', val: 5 },
+      { text: '主动提出新想法，喜欢探索', val: 9 }
+    ]
+  },
+  {
+    key: 'worklife',
+    q: '工作对你来说意味着什么？',
+    opts: [
+      { text: '工作是为了更好的生活', val: 9 },
+      { text: '工作和生活同样重要', val: 5 },
+      { text: '工作就是我的重心', val: 2 }
+    ]
+  }
+];
+
+let quizStep = 0;
+
+function renderQuiz() {
+  const current = QUIZ[quizStep];
+  const total = QUIZ.length;
+  const progress = ((quizStep + 1) / total) * 100;
+
+  document.getElementById('quizProgressFill').style.width = progress + '%';
+  document.getElementById('quizProgressText').textContent = '第 ' + (quizStep + 1) + ' / ' + total + ' 题';
+  document.getElementById('quizQText').textContent = current.q;
+
+  const optsContainer = document.getElementById('quizOptions');
+  optsContainer.innerHTML = current.opts.map((opt) =>
+    '<button class="btn btn-secondary" onclick="selectQuizOption(' + opt.val + ')" style="width:100%;text-align:left;justify-content:flex-start;padding:14px 16px;font-size:14px;">' + opt.text + '</button>'
+  ).join('');
+}
+
+function selectQuizOption(val) {
+  const current = QUIZ[quizStep];
+  profile.values[current.key] = val;
+
+  if (quizStep < QUIZ.length - 1) {
+    quizStep++;
+    renderQuiz();
+  } else {
+    finishQuiz();
+  }
+}
+
+function finishQuiz() {
+  profile.skipMode = false;
+  goToPage('tuning');
 }
 
 /* ====== 微调页面 ====== */
@@ -462,7 +600,7 @@ function renderPersonaDesc() {
 }
 
 function startExploring() {
-  localStorage.setItem('zq-profile', JSON.stringify(profile));
+  localStorage.setItem('ws_userProfile', JSON.stringify(profile));
   goToPage('transition');
   renderTransitionPage();
 }
@@ -497,7 +635,7 @@ function getTopTraits(profileData) {
 }
 
 function renderTransitionPage() {
-  const saved = localStorage.getItem('zq-profile');
+  const saved = localStorage.getItem('ws_userProfile');
   let profileData = { values: {} };
   if (saved) { try { profileData = JSON.parse(saved); } catch (e) {} }
   const traits = getTopTraits(profileData);
@@ -524,7 +662,7 @@ function enterSimulator() {
 /* ====== 初始化 ====== */
 document.addEventListener('DOMContentLoaded', () => {
   // 尝试从 localStorage 恢复
-  const saved = localStorage.getItem('zq-profile');
+  const saved = localStorage.getItem('ws_userProfile');
   if (saved) {
     try {
       profile = JSON.parse(saved);
