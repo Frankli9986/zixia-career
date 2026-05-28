@@ -512,7 +512,13 @@ function renderTransitionPage() {
 
 function enterSimulator() {
   localStorage.setItem('zq-enter-time', Date.now());
-  window.location.href = 'simulator.html';
+  // 线上部署环境（GitHub Pages）
+  if (window.location.hostname.includes('github.io')) {
+    window.location.href = 'simulator.html';
+  } else {
+    // 本地开发环境：模拟器在父目录
+    window.location.href = '../我的职场模拟器-自洽空间-v1.0.html';
+  }
 }
 
 /* ====== 初始化 ====== */
