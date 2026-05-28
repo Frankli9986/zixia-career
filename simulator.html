@@ -2250,7 +2250,7 @@ function buildDashboard() {
 }
 
 function drawRadarChart() {
-  const cx = 145, cy = 145, r = 115;
+  const cx = 190, cy = 170, r = 100;
   const n = PARAMS.length;
   const angles = PARAMS.map((_, i) => (i * 45 - 90) * Math.PI / 180);
 
@@ -2271,7 +2271,7 @@ function drawRadarChart() {
 
   const labels = PARAMS.map((p, i) => {
     const a = angles[i];
-    const lr = r + 26;
+    const lr = r + 35;
     const lx = (cx + lr * Math.cos(a)).toFixed(1);
     const ly = (cy + lr * Math.sin(a) + 3).toFixed(1);
     const anchor = lx < cx - 15 ? 'end' : lx > cx + 15 ? 'start' : 'middle';
@@ -2292,7 +2292,7 @@ function drawRadarChart() {
   }).join('');
 
   return `
-    <svg viewBox="0 0 290 290" style="max-width:340px;width:100%;margin:0 auto;display:block;">
+    <svg viewBox="0 0 380 340" style="max-width:380px;width:100%;margin:0 auto;display:block;">
       ${refRings}
       ${axisLines}
       <polygon points="${dataPts}" fill="rgba(232,184,109,0.12)" stroke="var(--accent)" stroke-width="1.5"/>
@@ -2721,7 +2721,7 @@ function buildGeneArchiveDummy() {
 }
 
 function drawRadarChartWithParams(params) {
-  const cx = 145, cy = 145, r = 115;
+  const cx = 190, cy = 170, r = 100;
   const angles = PARAMS.map((_, i) => (i * 45 - 90) * Math.PI / 180);
 
   let refRings = '';
@@ -2741,7 +2741,7 @@ function drawRadarChartWithParams(params) {
 
   const labels = PARAMS.map((p, i) => {
     const a = angles[i];
-    const lr = r + 26;
+    const lr = r + 35;
     const lx = (cx + lr * Math.cos(a)).toFixed(1);
     const ly = (cy + lr * Math.sin(a) + 3).toFixed(1);
     const anchor = lx < cx - 15 ? 'end' : lx > cx + 15 ? 'start' : 'middle';
@@ -2762,7 +2762,7 @@ function drawRadarChartWithParams(params) {
   }).join('');
 
   return `
-    <svg viewBox="0 0 290 290" style="max-width:340px;width:100%;margin:0 auto;display:block;">
+    <svg viewBox="0 0 380 340" style="max-width:380px;width:100%;margin:0 auto;display:block;">
       ${refRings}
       ${axisLines}
       <polygon points="${dataPts}" fill="rgba(232,184,109,0.12)" stroke="var(--accent)" stroke-width="1.5"/>
